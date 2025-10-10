@@ -33,7 +33,7 @@ Or maybe just keep the educators static, that's less to think about.
 ## TODO
 
 - [x] Transitions. modal_play.c
-- [ ] Status bar. modal_play.c
+- [x] Status bar. modal_play.c
 - [ ] Flags.
 - [ ] Proper hero motion and physics.
 - [ ] Hero actions.

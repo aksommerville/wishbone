@@ -3,6 +3,7 @@
 /* Transitions are effected at render, so they run even when we're blurred.
  */
 #define TRANSITION_TIME_FRAMES 30
+#define DISPHP_TIME_FRAMES 60
 
 static void play_render_bgbits(struct modal *modal);
 static void play_render_transbits(struct modal *modal);
@@ -13,6 +14,9 @@ struct modal_play {
   int transbits;
   int transclock; // Counts down from TRANSITION_TIME_FRAMES.
   int transdx,transdy; // Transition delta, or (0,0) for fade.
+  int tohp;
+  int disphp; // Normally matches (g.hp) but can mismatch while animating the change.
+  int disphpclock;
 };
 
 #define MODAL ((struct modal_play*)modal)
@@ -30,6 +34,7 @@ static void _play_del(struct modal *modal) {
  
 static int _play_init(struct modal *modal) {
   if (!g.map) return -1;
+  MODAL->disphp=MODAL->tohp=g.hp;
   if (egg_texture_load_raw(MODAL->bgbits=egg_texture_new(),NS_sys_tilesize*NS_sys_mapw,NS_sys_tilesize*NS_sys_maph,0,0,0)<0) return -1;
   if (egg_texture_load_raw(MODAL->transbits=egg_texture_new(),NS_sys_tilesize*NS_sys_mapw,NS_sys_tilesize*NS_sys_maph,0,0,0)<0) return -1;
   play_render_bgbits(modal);
@@ -188,18 +193,47 @@ static void play_render_sprites(struct modal *modal,int x0,int y0) {
 /* Render status bar.
  */
  
+static void play_render_hp(struct modal *modal,int x,int y,int w,int h,int full,int losing,int gaining,int empty) {
+  x+=NS_sys_tilesize>>1;
+  y+=h>>1;
+  for (;full-->0;x+=12) graf_tile(&g.graf,x,y,0x41,0);
+  if (MODAL->disphpclock%20>=8) {
+    for (;losing-->0;x+=12) graf_tile(&g.graf,x,y,0x42,0);
+    for (;gaining-->0;x+=12) graf_tile(&g.graf,x,y,0x43,0);
+  } else {
+    for (;losing-->0;x+=12) graf_tile(&g.graf,x,y,0x40,0);
+    for (;gaining-->0;x+=12) graf_tile(&g.graf,x,y,0x41,0);
+  }
+  for (;empty-->0;x+=12) graf_tile(&g.graf,x,y,0x40,0);
+}
+ 
 static void play_render_status_bar(struct modal *modal,int x,int y,int w,int h) {
   graf_fill_rect(&g.graf,x,y,w,h,0x000000ff);
-  //TODO status bar. for now just dumping some things to see what it looks like
   graf_set_image(&g.graf,RID_image_sprites);
-  int dstx=x+NS_sys_tilesize;
-  int dsty=y+(h>>1);
-  graf_tile(&g.graf,dstx,dsty,0x41,0); dstx+=12;
-  graf_tile(&g.graf,dstx,dsty,0x41,0); dstx+=12;
-  graf_tile(&g.graf,dstx,dsty,0x41,0); dstx+=12;
-  graf_tile(&g.graf,dstx,dsty,0x40,0); dstx+=12;
-  graf_tile(&g.graf,dstx,dsty,0x40,0); dstx+=12;
-  graf_tile(&g.graf,FBW-NS_sys_tilesize,dsty,0x43,0);
+  
+  if (g.hp!=MODAL->tohp) {
+    MODAL->disphpclock=DISPHP_TIME_FRAMES;
+    MODAL->disphp=MODAL->tohp;
+    MODAL->tohp=g.hp;
+  } else if (MODAL->disphpclock>0) {
+    if (!--(MODAL->disphpclock)) {
+      MODAL->disphp=MODAL->tohp=g.hp;
+    }
+  }
+  if (MODAL->disphp<g.hp) {
+    play_render_hp(modal,x,y,w,h,MODAL->disphp,0,g.hp-MODAL->disphp,g.maxhp-g.hp);
+  } else {
+    play_render_hp(modal,x,y,w,h,g.hp,MODAL->disphp-g.hp,0,g.maxhp-MODAL->disphp);
+  }
+  
+  uint8_t itemtileid=0;
+  switch (g.item) {
+    case NS_item_none: itemtileid=0x44; break;
+    case NS_item_wishbone: itemtileid=0x45; break;
+  }
+  if (itemtileid) {
+    graf_tile(&g.graf,FBW-NS_sys_tilesize,y+(h>>1),itemtileid,0);
+  }
 }
 
 /* Render.
@@ -213,17 +247,39 @@ static void _play_render(struct modal *modal) {
   if (MODAL->transclock>0) MODAL->transclock--; // Transition clock is unusual to tick against render frames instead of update time.
   
   if (MODAL->transclock) {
-    int x0=(MODAL->transdx*worldw*MODAL->transclock)/TRANSITION_TIME_FRAMES;
-    int y0=(MODAL->transdy*worldh*MODAL->transclock)/TRANSITION_TIME_FRAMES+statush;
-    int tx=x0-worldw*MODAL->transdx;
-    int ty=y0-worldh*MODAL->transdy;
-    graf_set_input(&g.graf,MODAL->transbits);
-    graf_decal(&g.graf,tx,ty,0,0,worldw,worldh);
-    graf_set_input(&g.graf,MODAL->bgbits);
-    graf_decal(&g.graf,x0,y0,0,0,worldw,worldh);
-    play_render_sprites(modal,x0,y0);
+    if (MODAL->transdx||MODAL->transdy) { // Pan.
+      int x0=(MODAL->transdx*worldw*MODAL->transclock)/TRANSITION_TIME_FRAMES;
+      int y0=(MODAL->transdy*worldh*MODAL->transclock)/TRANSITION_TIME_FRAMES+statush;
+      int tx=x0-worldw*MODAL->transdx;
+      int ty=y0-worldh*MODAL->transdy;
+      graf_set_input(&g.graf,MODAL->transbits);
+      graf_decal(&g.graf,tx,ty,0,0,worldw,worldh);
+      graf_set_input(&g.graf,MODAL->bgbits);
+      graf_decal(&g.graf,x0,y0,0,0,worldw,worldh);
+      play_render_sprites(modal,x0,y0);
+    } else { // Fade.
+      const int midperiod=TRANSITION_TIME_FRAMES>>1;
+      if (MODAL->transclock>=midperiod) { // Old to black.
+        graf_set_input(&g.graf,MODAL->transbits);
+        graf_decal(&g.graf,0,statush,0,0,worldw,worldh);
+        int alpha=((TRANSITION_TIME_FRAMES-MODAL->transclock)*255)/midperiod;
+        if (alpha>0) {
+          if (alpha>0xff) alpha=0xff;
+          graf_fill_rect(&g.graf,0,statush,worldw,worldh,0x00000000|alpha);
+        }
+      } else { // Black to new.
+        graf_set_input(&g.graf,MODAL->bgbits);
+        graf_decal(&g.graf,0,statush,0,0,worldw,worldh);
+        play_render_sprites(modal,0,statush);
+        int alpha=(MODAL->transclock*255)/midperiod;
+        if (alpha>0) {
+          if (alpha>0xff) alpha=0xff;
+          graf_fill_rect(&g.graf,0,statush,worldw,worldh,0x00000000|alpha);
+        }
+      }
+    }
 
-  } else {
+  } else { // No transition in progress.
     graf_set_input(&g.graf,MODAL->bgbits);
     graf_decal(&g.graf,0,statush,0,0,worldw,worldh);
     play_render_sprites(modal,0,statush);

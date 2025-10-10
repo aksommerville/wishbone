@@ -74,4 +74,11 @@ const struct sprite_type sprite_type_hero={
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput) {
   SPRITE->input=input;
   //TODO Impulse actions?
+  //XXX
+  if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
+    if (g.hp<g.maxhp) g.hp++;
+  }
+  if ((input&EGG_BTN_WEST)&&!(pvinput&EGG_BTN_WEST)) {
+    if (g.hp>0) g.hp--;
+  }
 }

@@ -33,6 +33,7 @@ extern struct g {
   
   struct graf graf;
   int pvinput;
+  int framec;
   
   struct modal **modalv;
   int modalc,modala;
@@ -43,6 +44,8 @@ extern struct g {
   struct sprite *hero; // WEAK, OPTIONAL, modal_play populates at the start of each frame.
   
   struct map *map; // WEAK, owned by mapv.
+  int hp,maxhp;
+  int item;
 } g;
 
 int res_load();

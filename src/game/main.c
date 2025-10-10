@@ -22,6 +22,8 @@ int egg_client_init() {
   srand_auto();
   
   //TODO Start with modal_type_hello, and have it do these before dismissing:
+  g.hp=g.maxhp=5;
+  g.item=NS_item_wishbone;
   if (load_map(RID_map_start)<0) return -1;
   if (!modal_spawn(&modal_type_play)) return -1;
 
@@ -78,6 +80,7 @@ void egg_client_update(double elapsed) {
  */
 
 void egg_client_render() {
+  g.framec++;
   graf_reset(&g.graf);
   
   // Find the highest opaque modal.
