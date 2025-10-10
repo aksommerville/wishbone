@@ -31,6 +31,7 @@ struct sprite_type {
   // Implement only if you need more than a single tile.
   void (*render)(struct sprite *sprite,int dstx,int dsty);
   
+  void (*focus)(struct sprite *sprite,int focus);
   //TODO Other signal hooks.
 };
 
@@ -39,6 +40,8 @@ struct sprite_type {
  */
 void sprite_del(struct sprite *sprite);
 struct sprite *sprite_new(const struct sprite_type *type,double x,double y,uint32_t arg,const void *cmd,int cmdc,int spriteid);
+void sprite_reap_defunct();
+void sprite_relist(struct sprite *sprite); // only game.c should use this, to reinsert the hero during a transition
 
 struct sprite *sprite_spawn_type(const struct sprite_type *type,double x,double y,uint32_t arg);
 struct sprite *sprite_spawn_res(int spriteid,double x,double y,uint32_t arg);
@@ -48,5 +51,7 @@ const struct sprite_type *sprite_type_by_sprtype(int sprtype);
 #define _(tag) extern const struct sprite_type sprite_type_##tag;
 FOR_EACH_SPRTYPE
 #undef _
+
+void sprite_hero_input(struct sprite *sprite,int input,int pvinput);
 
 #endif

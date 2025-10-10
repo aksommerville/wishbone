@@ -11,4 +11,5 @@
 2122000407030204030740414154515151515151
 
 image image:outdoors
-neighbors map:3 map:5 map:2 0x0000
+neighbors map:3 map:5 map:2 map:4
+sprite @9,4 sprite:hero (u32)0

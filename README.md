@@ -32,12 +32,26 @@ Or maybe just keep the educators static, that's less to think about.
 
 ## TODO
 
+- [x] Transitions. modal_play.c
+- [ ] Status bar. modal_play.c
+- [ ] Flags.
+- [ ] Proper hero motion and physics.
+- [ ] Hero actions.
+- - [ ] stab
+- - [ ] swing
+- - [ ] polevault
+- - [ ] boomerang
+- - [ ] wand
+- - [ ] slingshot
+- - [ ] lockpick
+
 ## Notes
 
 - We're going big. So assume we'll need multiple tilesheets. (don't hard-code against one like I did for Mysteries of the Crypt).
 - Spooky Halloween aesthetics wherever possible. As if I'd ever do otherwise :)
-- Immutable maps.
+- Mutable maps. Use simple POI like we did in Spelling Bee for switches and stuff.
 - Maybe a gag where you can trade the wishbone for a swiss army knife, which doesn't do anything useful.
 - Work into the narrative that you can break the bone to make a wish. Use that right at the end: "Dragon, I wish you were dead!"
 - The wishbone's technical name is Furcula. That sounds useful. "Count Furcula's Castle"...
 - Flat list of sprites. Don't use groups, too complicated.
+- No "session" container. The globals have gameplay stuff spread across.

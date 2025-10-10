@@ -63,6 +63,10 @@ static struct sprite *sprite_list(struct sprite *sprite) {
   return sprite;
 }
 
+void sprite_relist(struct sprite *sprite) {
+  sprite_list(sprite);
+}
+
 /* Spawn.
  */
 
@@ -87,6 +91,21 @@ struct sprite *sprite_spawn_res(int spriteid,double x,double y,uint32_t arg) {
   if (!type) return 0;
   struct sprite *sprite=sprite_new(type,x,y,arg,res,resc,spriteid);
   return sprite_list(sprite);
+}
+
+/* Reap defunct sprites.
+ */
+ 
+void sprite_reap_defunct() {
+  int i=g.spritec;
+  while (i-->0) {
+    struct sprite *sprite=g.spritev[i];
+    if (!sprite->defunct) continue;
+    if (sprite==g.hero) g.hero=0;
+    g.spritec--;
+    memmove(g.spritev+i,g.spritev+i+1,sizeof(void*)*(g.spritec-i));
+    sprite_del(sprite);
+  }
 }
 
 /* Type by id.
