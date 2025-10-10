@@ -17,18 +17,86 @@ int egg_client_init() {
   g.romc=egg_rom_get(0,0);
   if (!(g.rom=malloc(g.romc))) return -1;
   egg_rom_get(g.rom,g.romc);
-
-  //TODO
+  if (res_load()<0) return -1;
+  
+  if (!modal_spawn(&modal_type_play)) return -1;
 
   return 0;
 }
 
+/* Update.
+ */
+
 void egg_client_update(double elapsed) {
-  //TODO
+
+  // Poll input.
+  int input=egg_input_get_one(0);
+  int pvinput=g.pvinput;
+  if (input!=g.pvinput) {
+    // If we ever need global keystrokes, here they are.
+    g.pvinput=input;
+  }
+  
+  // Determine which modal should receive the update.
+  // Flash focus if needed.
+  struct modal *nfocus=0;
+  int i=g.modalc;
+  while (i-->0) {
+    struct modal *q=g.modalv[i];
+    if (q->defunct) continue;
+    if (!q->type->interactive) continue;
+    nfocus=q;
+    break;
+  }
+  if (nfocus!=g.modal_focus) {
+    if (modal_is_resident(g.modal_focus)) {
+      if (g.modal_focus->type->focus) g.modal_focus->type->focus(g.modal_focus,0);
+    }
+    g.modal_focus=nfocus;
+    if (nfocus) {
+      if (nfocus->type->focus) nfocus->type->focus(nfocus,1);
+    }
+  }
+  
+  // Update the focussed modal.
+  if (nfocus) {
+    if (nfocus->type->update) nfocus->type->update(nfocus,elapsed,input,pvinput);
+  } else {
+    fprintf(stderr,"Modal stack depleted.\n");
+    egg_terminate(1);
+    return;
+  }
+  
+  modal_reap_defunct();
 }
+
+/* Render.
+ */
 
 void egg_client_render() {
   graf_reset(&g.graf);
-  //TODO
+  
+  // Find the highest opaque modal.
+  int opaquep=g.modalc;
+  while (opaquep-->0) {
+    struct modal *modal=g.modalv[opaquep];
+    if (modal->defunct) continue;
+    if (!modal->type->opaque) continue;
+    break;
+  }
+  
+  // If we don't have an opaque modal, fill black. This shouldn't happen.
+  if (opaquep<0) {
+    opaquep=0;
+    graf_fill_rect(&g.graf,0,0,FBW,FBH,0x000000ff);
+  }
+  
+  // Render all live modals starting at (opaquep).
+  for (;opaquep<g.modalc;opaquep++) {
+    struct modal *modal=g.modalv[opaquep];
+    if (modal->defunct) continue;
+    if (modal->type->render) modal->type->render(modal);
+  }
+  
   graf_flush(&g.graf);
 }

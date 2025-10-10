@@ -32,4 +32,12 @@ Or maybe just keep the educators static, that's less to think about.
 
 ## TODO
 
+## Notes
 
+- We're going big. So assume we'll need multiple tilesheets. (don't hard-code against one like I did for Mysteries of the Crypt).
+- Spooky Halloween aesthetics wherever possible. As if I'd ever do otherwise :)
+- Immutable maps.
+- Maybe a gag where you can trade the wishbone for a swiss army knife, which doesn't do anything useful.
+- Work into the narrative that you can break the bone to make a wish. Use that right at the end: "Dragon, I wish you were dead!"
+- The wishbone's technical name is Furcula. That sounds useful. "Count Furcula's Castle"...
+- Flat list of sprites. Don't use groups, too complicated.
