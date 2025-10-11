@@ -16,6 +16,8 @@
 // Quantized positions held by some sprite. We only track interesting ones.
 #define QPOS_LIMIT 32
 
+#define FORGOTTEN_LIMIT 16
+
 struct map {
   int rid;
   int imageid;
@@ -54,6 +56,14 @@ extern struct g {
   uint8_t flags[(NS_FLAG_COUNT+7)>>3];
   struct qpos { int x,y; } qposv[QPOS_LIMIT];
   int qposc;
+  struct forgotten { // A thing left behind, typically a wishbone.
+    int mapid;
+    int x,y;
+    int flagid;
+    int forgottenid;
+  } forgottenv[FORGOTTEN_LIMIT];
+  int forgottenc;
+  int forgottenid_next;
 } g;
 
 int res_load();
@@ -76,5 +86,8 @@ void wishbone_sound(int rid);
 int spell_eval(const char *src,int srcc);
 int spell_repr(char *dst,int dsta,int spellid);
 void spell_cast(int spellid);
+
+int forgotten_add(int mapid,int x,int y,int flagid);
+void forgotten_remove(int forgottenid);
 
 #endif

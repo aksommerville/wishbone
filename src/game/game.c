@@ -92,6 +92,17 @@ int load_map(int mapid) {
     }
   }
   
+  // Place forgotten things.
+  {
+    struct forgotten *f=g.forgottenv;
+    int i=g.forgottenc;
+    for (;i-->0;f++) {
+      if (f->mapid!=g.map->rid) continue;
+      struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,f->x+0.5,f->y+0.5,(f->flagid<<24)|(f->forgottenid<<8));
+      fprintf(stderr,"created forgottenid=%d sprite=%p\n",f->forgottenid,treasure);
+    }
+  }
+  
   //TODO song?
   //TODO generic inbound triggers
   
@@ -229,4 +240,30 @@ void qpos_release(int x,int y) {
   }
   if (!rmc) return; // No record of it.
   qpos_set_flag(x,y,0);
+}
+
+/* Forgotten things.
+ */
+ 
+int forgotten_add(int mapid,int x,int y,int flagid) {
+  if (g.forgottenc>=FORGOTTEN_LIMIT) return -1;
+  if (g.forgottenid_next<1) g.forgottenid_next=1;
+  struct forgotten *f=g.forgottenv+g.forgottenc++;
+  f->mapid=mapid;
+  f->x=x;
+  f->y=y;
+  f->flagid=flagid;
+  f->forgottenid=g.forgottenid_next++;
+  return f->forgottenid;
+}
+
+void forgotten_remove(int forgottenid) {
+  int i=g.forgottenc;
+  while (i-->0) {
+    struct forgotten *f=g.forgottenv+i;
+    if (f->forgottenid!=forgottenid) continue;
+    g.forgottenc--;
+    memmove(f,f+1,sizeof(struct forgotten)*(g.forgottenc-i));
+    return;
+  }
 }

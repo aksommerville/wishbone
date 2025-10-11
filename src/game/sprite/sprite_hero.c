@@ -163,6 +163,7 @@ static int hero_check_wand(struct sprite *sprite) {
  * If we're not touching water right now, great, nothing happens.
  * If we have under half a meter's clearance to land, do that. (ie our center is on a legal cell).
  * But if we're right in the water, create a splash, return to the safe position, and get hurt.
+ * Nonzero if she stayed close to the target (allowing for corrections), zero if she drowned.
  */
  
 static void hero_force_onscreen(struct sprite *sprite) {
@@ -172,7 +173,7 @@ static void hero_force_onscreen(struct sprite *sprite) {
   else if (sprite->y>NS_sys_maph-0.5) sprite->y=NS_sys_maph-0.5;
 }
  
-static void hero_return_to_earth(struct sprite *sprite) {
+static int hero_return_to_earth(struct sprite *sprite) {
 
   // First, clamp hard to the screen's boundaries. Don't want any offscreen monkey business.
   // Flight director should have been doing this during the flight, but let's be certain.
@@ -192,11 +193,11 @@ static void hero_return_to_earth(struct sprite *sprite) {
     sprite->x=SPRITE->vaultx;
     sprite->y=SPRITE->vaulty;
     hero_injure(sprite);
-    return;
+    return 0;
   }
   
   // If the current position is tenable, we're done.
-  if (sprite_test_position(sprite)) return;
+  if (sprite_test_position(sprite)) return 1;
   
   /* Consider three possible positions, aligning ourselves exactly to the focus cell on each axis.
    * First to produce a valid position wins.
@@ -207,9 +208,9 @@ static void hero_return_to_earth(struct sprite *sprite) {
   double oy=sprite->y;
   double nx=x+0.5;
   double ny=y+0.5;
-  sprite->x=ox; sprite->y=ny; if (sprite_test_position(sprite)) return;
-  sprite->x=nx; sprite->y=oy; if (sprite_test_position(sprite)) return;
-  sprite->x=nx; sprite->y=oy; if (sprite_test_position(sprite)) return;
+  sprite->x=ox; sprite->y=ny; if (sprite_test_position(sprite)) return 1;
+  sprite->x=nx; sprite->y=oy; if (sprite_test_position(sprite)) return 1;
+  sprite->x=nx; sprite->y=oy; if (sprite_test_position(sprite)) return 1;
   goto _splash_;
 }
 
@@ -338,8 +339,19 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
   // In flight?
   if (SPRITE->actionclock>0.0) {
     if ((SPRITE->actionclock-=elapsed)<=0.0) {
+      if (hero_return_to_earth(sprite)) {
+        int forgottenid=forgotten_add(g.map->rid,(int)SPRITE->vaultx,(int)SPRITE->vaulty,NS_flag_wishbone);
+        fprintf(stderr,"lost my bone. forgottenid=%d\n",forgottenid);
+        if (forgottenid>0) {
+          struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,SPRITE->vaultx,SPRITE->vaulty,(NS_flag_wishbone<<24)|(forgottenid<<8));
+          fprintf(stderr,"...sprite=%p\n",treasure);
+          g.item=0;
+          flag_set(NS_flag_wishbone,0);
+        }
+      } else {
+        // We drowned. We'll restart where the slingshot was planted, so no sense dropping it.
+      }
       SPRITE->action_state=0;
-      hero_return_to_earth(sprite);
     } else {
       uint32_t pvphymask=sprite->phymask;
       sprite->phymask&=~(1<<NS_physics_water);
@@ -356,6 +368,7 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
     if (event->press&EGG_BTN_SOUTH) {
       if (SPRITE->slingm<=0.0) {
         SPRITE->action_state=0;
+        // Cancelled. Keep your wishbone, do not create a forgotten.
       } else {
         SPRITE->actionclock=SLINGSHOT_FLIGHT_TIME;
         double velocity=SLINGSHOT_VEL_MIN+(SPRITE->slingm*(SLINGSHOT_VEL_MAX-SLINGSHOT_VEL_MIN))/SLINGSHOT_MAG_MAX;

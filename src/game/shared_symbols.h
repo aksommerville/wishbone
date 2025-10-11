@@ -47,7 +47,7 @@
 // Should match everything after 'spriteid' in the CMD_map_sprite args.
 #define NS_sprtype_dummy      0 /* (u32)0 */
 #define NS_sprtype_hero       1 /* (u32)0 */
-#define NS_sprtype_treasure   2 /* (u8:flag)zero (u8:prize)none (u16)0 */
+#define NS_sprtype_treasure   2 /* (u8:flag)zero (u8:prize)none (u8)0 (u8)0 */
 #define NS_sprtype_boomerang  3 /* (u24)0 0x02 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \

@@ -8,6 +8,7 @@ struct sprite_treasure {
   struct sprite hdr;
   uint8_t flagid;
   uint8_t prizeid;
+  uint8_t forgottenid;
   uint8_t animate;
   uint8_t tileid0;
   double animclock;
@@ -20,7 +21,9 @@ static int _treasure_init(struct sprite *sprite) {
   SPRITE->tileid0=sprite->tileid;
   SPRITE->flagid=sprite->arg>>24;
   SPRITE->prizeid=sprite->arg>>16;
-  if (flag_get(SPRITE->flagid)) return -1;
+  SPRITE->forgottenid=sprite->arg>>8;
+  // Can't do this, because we create multiple wishbone sprites, when you lose one due to slingshotting.
+  //if (flag_get(SPRITE->flagid)) return -1;
   
   struct cmdlist_reader reader;
   if (sprite_reader_init(&reader,sprite->res,sprite->resc)>=0) {
@@ -36,6 +39,7 @@ static int _treasure_init(struct sprite *sprite) {
 }
 
 static void treasure_get_got(struct sprite *sprite) {
+  if (SPRITE->forgottenid) forgotten_remove(SPRITE->forgottenid);
   if (SPRITE->flagid) {
     if (g.item) return; // Assuming that all flag treasures are items. Might not be the case eventually.
     g.item=SPRITE->flagid;
