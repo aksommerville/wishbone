@@ -58,7 +58,10 @@ FOR_EACH_SPRTYPE
 
 // Physics.
 int sprite_move(struct sprite *sprite,double dx,double dy);
+int sprite_test_position(const struct sprite *sprite); // 0=collide, 1=ok
 
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput);
+
+int sprite_boomerang_exists();
 
 #endif

@@ -87,3 +87,51 @@ int sprite_move(struct sprite *sprite,double dx,double dy) {
   sprite->y+=dy;
   return 1;
 }
+
+/* Test collisions without correcting anything.
+ */
+
+int sprite_test_position(const struct sprite *sprite) {
+
+  if (!sprite->phymask) return 1;
+  
+  const double fudge=0.005;
+  double l=sprite->x-0.5+fudge;
+  double r=sprite->x+0.5-fudge;
+  double t=sprite->y-0.5+fudge;
+  double b=sprite->y+0.5-fudge;
+  
+  int cola=(int)l; if (cola<0) cola=0;
+  int rowa=(int)t; if (rowa<0) rowa=0;
+  int colz=(int)r; if (colz>=NS_sys_mapw) colz=NS_sys_mapw-1;
+  int rowz=(int)b; if (rowz>=NS_sys_maph) rowz=NS_sys_maph-1;
+  if ((cola<=colz)&&(rowa<=rowz)) {
+    const uint8_t *maprow=g.map->v+rowa*NS_sys_mapw+cola;
+    int row=rowa;
+    for (;row<=rowz;row++,maprow+=NS_sys_mapw) {
+      const uint8_t *mapp=maprow;
+      int col=cola;
+      for (;col<=colz;col++,mapp++) {
+        uint8_t physics=g.physics[*mapp];
+        if (physics>=32) continue;
+        if (sprite->phymask&(1<<physics)) return 0;
+      }
+    }
+  }
+  
+  int i=g.spritec;
+  struct sprite **p=g.spritev;
+  for (;i-->0;p++) {
+    struct sprite *other=*p;
+    if (other==sprite) continue;
+    if (other->defunct) continue;
+    if (!other->phymask) continue;
+    if (other->x+0.5<=l) continue;
+    if (other->x-0.5>=r) continue;
+    if (other->y+0.5<=t) continue;
+    if (other->y-0.5>=b) continue;
+    return 0;
+  }
+
+  return 1;
+}

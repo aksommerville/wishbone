@@ -37,11 +37,11 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Flags.
 - [x] Proper hero motion and physics.
 - [ ] Hero actions.
-- - [ ] stab
-- - [ ] swing
-- - [ ] polevault
-- - [ ] boomerang
-- - [ ] wand
+- - [x] stab
+- - [x] swing
+- - [x] polevault
+- - [x] boomerang
+- - [x] wand
 - - [ ] slingshot
 - - [ ] lockpick
 - [x] POI-only treadles and stompboxes.

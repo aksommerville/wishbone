@@ -72,4 +72,9 @@ void qpos_release(int x,int y);
 #define SFX(tag) wishbone_sound(RID_sound_##tag);
 void wishbone_sound(int rid);
 
+// Represented spells are some combination of [LRUD]. Also a good format for programmatic analysis.
+int spell_eval(const char *src,int srcc);
+int spell_repr(char *dst,int dsta,int spellid);
+void spell_cast(int spellid);
+
 #endif

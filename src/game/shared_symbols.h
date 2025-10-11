@@ -37,15 +37,23 @@
 #define NS_prize_none  0
 #define NS_prize_heart 1
 
+#define NS_spell_invalid 0
+#define NS_spell_teleport 1
+#define NS_spell_rain 2
+#define NS_spell_fire 3
+//TODO dream up some more spells, 5..10 is probly good
+
 // Editor uses the comment after a 'sprtype' symbol as a prompt in the new-sprite modal.
 // Should match everything after 'spriteid' in the CMD_map_sprite args.
 #define NS_sprtype_dummy      0 /* (u32)0 */
 #define NS_sprtype_hero       1 /* (u32)0 */
 #define NS_sprtype_treasure   2 /* (u8:flag)zero (u8:prize)none (u16)0 */
+#define NS_sprtype_boomerang  3 /* (u24)0 0x02 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
-  _(treasure)
+  _(treasure) \
+  _(boomerang)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1
