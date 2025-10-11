@@ -11,6 +11,12 @@
 #define HERO_EVENT_LIMIT 16
 #define SPELL_LIMIT 16
 #define DAMAGE_TIME 0.500
+#define SLINGSHOT_ANGVEL 3.000 /* radian/sec */
+#define SLINGSHOT_MAG_ADJUST_RATE 40.0 /* pixel/sec */
+#define SLINGSHOT_MAG_MAX 30.0
+#define SLINGSHOT_VEL_MAX 20.0
+#define SLINGSHOT_VEL_MIN 10.0
+#define SLINGSHOT_FLIGHT_TIME 0.333
 
 #define ACTION_STATE_NONE 0
 #define ACTION_STATE_STAB 1
@@ -44,6 +50,8 @@ struct sprite_hero {
   int spellp;
   double rejectclock; // WAND
   double damageclock;
+  double slingt; // radians
+  double slingm; // visual displacement in pixels, and related to output force
 };
 
 static struct hero_event empty_event={0};
@@ -209,13 +217,13 @@ static void hero_return_to_earth(struct sprite *sprite) {
  */
  
 static int hero_check_vault(struct sprite *sprite) {
-  // Vault can only be done in cardinal directions, and must be exactly [dpad,south] with a certain minimum interval between.
+  // Vault can only be done in cardinal directions, and must be exactly [dpad,south] with a certain maximum interval between.
   const struct hero_event *dpad=hero_get_event(sprite,-2);
   const struct hero_event *south=hero_get_event(sprite,-1);
   if ((south->press!=EGG_BTN_SOUTH)||south->release) return 0;
   if (dpad->release) return 0;
   double duration=south->time-dpad->time;
-  if (duration<VAULT_WARMUP_TIME) return 0;
+  if (duration>VAULT_WARMUP_TIME) return 0;
   int dx=0,dy=0;
   switch (dpad->press) {
     case EGG_BTN_LEFT: dx=-1; break;
@@ -284,8 +292,12 @@ static void hero_update_wand(struct sprite *sprite,double elapsed) {
         spellc++;
       }
       if (!spellc) {
-        fprintf(stderr,"BEGIN SLINGSHOT\n");//TODO
         SPRITE->action_state=ACTION_STATE_SLINGSHOT;
+        SPRITE->slingt=-M_PI/2.0;
+        SPRITE->slingm=0.0;
+        SPRITE->vaultx=sprite->x;
+        SPRITE->vaulty=sprite->y;
+        SPRITE->actionclock=0.0;
       } else {
         char spell[SPELL_LIMIT];
         int i=0; for (;i<spellc;i++,spellp++) {
@@ -322,8 +334,53 @@ static void hero_update_wand(struct sprite *sprite,double elapsed) {
  */
  
 static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
-  //TODO slingshot
-  SPRITE->action_state=0;
+  
+  // In flight?
+  if (SPRITE->actionclock>0.0) {
+    if ((SPRITE->actionclock-=elapsed)<=0.0) {
+      SPRITE->action_state=0;
+      hero_return_to_earth(sprite);
+    } else {
+      uint32_t pvphymask=sprite->phymask;
+      sprite->phymask&=~(1<<NS_physics_water);
+      sprite_move(sprite,SPRITE->vaultdx*elapsed,0.0);
+      sprite_move(sprite,0.0,SPRITE->vaultdy*elapsed);
+      sprite->phymask=pvphymask;
+      hero_force_onscreen(sprite);
+    }
+    return;
+  }
+  
+  if (SPRITE->fresh_event) {
+    const struct hero_event *event=hero_get_event(sprite,-1);
+    if (event->press&EGG_BTN_SOUTH) {
+      if (SPRITE->slingm<=0.0) {
+        SPRITE->action_state=0;
+      } else {
+        SPRITE->actionclock=SLINGSHOT_FLIGHT_TIME;
+        double velocity=SLINGSHOT_VEL_MIN+(SPRITE->slingm*(SLINGSHOT_VEL_MAX-SLINGSHOT_VEL_MIN))/SLINGSHOT_MAG_MAX;
+        SPRITE->vaultdx=+cos(-SPRITE->slingt)*velocity;
+        SPRITE->vaultdy=-sin(-SPRITE->slingt)*velocity;
+      }
+    }
+  }
+  switch (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
+    // LEFT is clockwise and RIGHT deasil, which is against convention, but feels right because we start with the bullet at the bottom.
+    case EGG_BTN_LEFT: SPRITE->slingt+=SLINGSHOT_ANGVEL*elapsed; break;
+    case EGG_BTN_RIGHT: SPRITE->slingt-=SLINGSHOT_ANGVEL*elapsed; break;
+  }
+  switch (SPRITE->input&(EGG_BTN_UP|EGG_BTN_DOWN)) {
+    case EGG_BTN_UP: {
+        if ((SPRITE->slingm-=SLINGSHOT_MAG_ADJUST_RATE*elapsed)<=0.0) {
+          SPRITE->slingm=0.0;
+        }
+      } break;
+    case EGG_BTN_DOWN: {
+        if ((SPRITE->slingm+=SLINGSHOT_MAG_ADJUST_RATE*elapsed)>SLINGSHOT_MAG_MAX) {
+          SPRITE->slingm=SLINGSHOT_MAG_MAX;
+        }
+      } break;
+  }
 }
 
 /* Check SWING, begin if warranted and return nonzero.
@@ -621,7 +678,37 @@ static void hero_render_spell(struct sprite *sprite,int midx,int midy) {
  
 static void hero_render_inner(struct sprite *sprite,int dstx,int dsty) {
   
-  //TODO SLINGSHOT will be something completely different. Maybe some other actions too.
+  // SLINGSHOT is something completely different.
+  if (SPRITE->action_state==ACTION_STATE_SLINGSHOT) {
+    // Beware, the tile is oriented an eighth-turn off, to make it fit in the tile space.
+    int polex=(int)(SPRITE->vaultx*NS_sys_tilesize);
+    int poley=(int)(SPRITE->vaulty*NS_sys_tilesize)+NS_sys_tilesize; // Unwisely assuming the status bar is always 1 tile.
+    int rotation=((SPRITE->slingt+M_PI/4.0)*255.0)/(M_PI*2.0);
+    graf_fancy(&g.graf,polex,poley,0x16,0,rotation,NS_sys_tilesize,0,0x808080ff);
+    int ax=polex+(int)(cos(M_PI-SPRITE->slingt-M_PI*0.5)*8.0);
+    int ay=poley-(int)(sin(M_PI-SPRITE->slingt-M_PI*0.5)*8.0);
+    int bx=polex+(int)(cos(M_PI-SPRITE->slingt+M_PI*0.5)*8.0);
+    int by=poley-(int)(sin(M_PI-SPRITE->slingt+M_PI*0.5)*8.0);
+    if (SPRITE->actionclock>0.0) { // Launched. Show a sproinging line on the bone, and draw Dot flying.
+      double sproing=sin((SPRITE->actionclock*M_PI*4.0)/SLINGSHOT_FLIGHT_TIME)*3.0;
+      int spx=(int)(cos(M_PI-SPRITE->slingt)*sproing);
+      int spy=(int)(sin(M_PI-SPRITE->slingt)*-sproing);
+      ax+=spx; ay+=spy; bx+=spx; by+=spy;
+      graf_set_input(&g.graf,0);
+      graf_line(&g.graf,ax,ay,0xe0c0a0ff,bx,by,0xe0c0a0ff);
+      graf_set_image(&g.graf,sprite->imageid);
+      graf_tile(&g.graf,dstx,dsty,0x00,0);//TODO dot in flight tile
+    } else { // Preparing.
+      double focusx=polex+cos(M_PI-SPRITE->slingt)*SPRITE->slingm;
+      double focusy=poley-sin(M_PI-SPRITE->slingt)*SPRITE->slingm;
+      graf_set_input(&g.graf,0);
+      graf_line(&g.graf,focusx,focusy,0xffffffff,ax,ay,0xe0c0a0ff);
+      graf_line(&g.graf,focusx,focusy,0xffffffff,bx,by,0xe0c0a0ff);
+      graf_set_image(&g.graf,sprite->imageid);
+      graf_tile(&g.graf,(int)focusx,(int)focusy,0x17,0);
+    }
+    return;
+  }
   
   // WAND, it's one of five tiles and three of them also need a bone. (the UP wielding tile, it's built into Dot).
   // Also, a readout of the spell so far.

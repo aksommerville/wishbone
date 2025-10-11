@@ -42,9 +42,19 @@ Or maybe just keep the educators static, that's less to think about.
 - - [x] polevault
 - - [x] boomerang
 - - [x] wand
-- - [ ] slingshot
+- - [x] slingshot
 - - [ ] lockpick
 - [x] POI-only treadles and stompboxes.
+- [ ] Hero death.
+- [ ] Music.
+- [ ] Sound effects.
+- [ ] Hello modal.
+- [ ] Gameover modal and fancy cutscenes.
+- [ ] Dialogue.
+- [ ] Combat.
+- [ ] Proper maps.
+- [ ] Splash effect. (eg vault or slingshot into the sea)
+- [ ] Dot faces for slingshot flight. Using the generic idle face now.
 
 ## Notes
 
