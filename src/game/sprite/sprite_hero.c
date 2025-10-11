@@ -117,7 +117,25 @@ static int hero_check_lockpick(struct sprite *sprite) {
     case 0x02: y++; break;
   }
   if ((x<0)||(y<0)||(x>=NS_sys_mapw)||(y>=NS_sys_maph)) return 0;
-  //TODO Check poi for an unpicked lock at (x,y). If one exists, enter the lockpick modal and return nonzero.
+  // A little optimization, since we're going to be called on every stroke of SOUTH -- Search POI only if we're looking at a solid cell.
+  uint8_t tileid=g.map->v[y*NS_sys_mapw+x];
+  uint8_t physics=g.physics[tileid];
+  if (physics!=NS_physics_solid) return 0;
+  // Search...
+  struct cmdlist_reader reader;
+  if (cmdlist_reader_init(&reader,g.map->cmd,g.map->cmdc)<0) return 0;
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
+    switch (cmd.opcode) {
+      case CMD_map_lock: {
+          if (cmd.arg[0]!=x) continue;
+          if (cmd.arg[1]!=y) continue;
+          if (flag_get(cmd.arg[2])) continue;
+          fprintf(stderr,"TODO Pick lock at %d,%d for flag %d\n",x,y,cmd.arg[2]);
+          return 1;
+        }
+    }
+  }
   return 0;
 }
 
@@ -341,10 +359,8 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
     if ((SPRITE->actionclock-=elapsed)<=0.0) {
       if (hero_return_to_earth(sprite)) {
         int forgottenid=forgotten_add(g.map->rid,(int)SPRITE->vaultx,(int)SPRITE->vaulty,NS_flag_wishbone);
-        fprintf(stderr,"lost my bone. forgottenid=%d\n",forgottenid);
         if (forgottenid>0) {
           struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,SPRITE->vaultx,SPRITE->vaulty,(NS_flag_wishbone<<24)|(forgottenid<<8));
-          fprintf(stderr,"...sprite=%p\n",treasure);
           g.item=0;
           flag_set(NS_flag_wishbone,0);
         }

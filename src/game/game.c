@@ -63,6 +63,7 @@ int load_map(int mapid) {
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
 
+      case CMD_map_lock:
       case CMD_map_switchable:
       case CMD_map_stompbox: {
           int x=cmd.arg[0];
@@ -122,6 +123,7 @@ static void recheck_poi(int flagid,int v) {
 
       // Stompboxes change when something else actuates the same flag. A little weird but we have to.
       // Treadles do not.
+      case CMD_map_lock:
       case CMD_map_switchable:
       case CMD_map_stompbox: {
           if (cmd.arg[2]!=flagid) break;

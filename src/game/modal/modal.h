@@ -40,6 +40,7 @@ void modal_reap_defunct();
 struct modal *modal_spawn(const struct modal_type *type);
 
 extern const struct modal_type modal_type_play;
+extern const struct modal_type modal_type_lockpick;
 extern const struct modal_type modal_type_dialogue;
 extern const struct modal_type modal_type_gameover;
 extern const struct modal_type modal_type_hello;
