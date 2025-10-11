@@ -1,9 +1,14 @@
 #include "game/wishbone.h"
 
+#define WALK_SPEED 6.000
+
 struct sprite_hero {
   struct sprite hdr;
   int input;
   int qx,qy;
+  uint8_t facedir; // 0x40,0x10,0x08,0x02
+  double animclock;
+  int animframe;
 };
 
 #define SPRITE ((struct sprite_hero*)sprite)
@@ -20,7 +25,37 @@ static void _hero_del(struct sprite *sprite) {
 static int _hero_init(struct sprite *sprite) {
   SPRITE->qx=-1;
   SPRITE->qy=-1;
+  SPRITE->facedir=0x02;
   return 0;
+}
+
+/* Walking and such.
+ */
+ 
+static void hero_update_walk(struct sprite *sprite,double elapsed) {
+  switch (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
+    case EGG_BTN_LEFT: sprite_move(sprite,-WALK_SPEED*elapsed,0.0); break;
+    case EGG_BTN_RIGHT: sprite_move(sprite,WALK_SPEED*elapsed,0.0); break;
+  }
+  switch (SPRITE->input&(EGG_BTN_UP|EGG_BTN_DOWN)) {
+    case EGG_BTN_UP: sprite_move(sprite,0.0,-WALK_SPEED*elapsed); break;
+    case EGG_BTN_DOWN: sprite_move(sprite,0.0,WALK_SPEED*elapsed); break;
+  }
+}
+
+/* Animation.
+ */
+ 
+static void hero_update_animation(struct sprite *sprite,double elapsed) {
+  if (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN)) {
+    if ((SPRITE->animclock-=elapsed)<=0.0) {
+      SPRITE->animclock+=0.200;
+      if (++(SPRITE->animframe)>=4) SPRITE->animframe=0;
+    }
+  } else {
+    SPRITE->animclock=0.0;
+    SPRITE->animframe=0;
+  }
 }
 
 /* Quantize my position and if it's changed, trigger POI.
@@ -42,16 +77,8 @@ static void hero_check_quantized_position(struct sprite *sprite) {
  */
  
 static void _hero_update(struct sprite *sprite,double elapsed) {
-  //TODO proper motion
-  const double speed=6.0;
-  switch (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
-    case EGG_BTN_LEFT: sprite->x-=speed*elapsed; break;
-    case EGG_BTN_RIGHT: sprite->x+=speed*elapsed; break;
-  }
-  switch (SPRITE->input&(EGG_BTN_UP|EGG_BTN_DOWN)) {
-    case EGG_BTN_UP: sprite->y-=speed*elapsed; break;
-    case EGG_BTN_DOWN: sprite->y+=speed*elapsed; break;
-  }
+  hero_update_walk(sprite,elapsed);
+  hero_update_animation(sprite,elapsed);
   hero_check_quantized_position(sprite);
 }
 
@@ -60,7 +87,19 @@ static void _hero_update(struct sprite *sprite,double elapsed) {
  
 static void _hero_render(struct sprite *sprite,int dstx,int dsty) {
   graf_set_image(&g.graf,sprite->imageid);
-  graf_tile(&g.graf,dstx,dsty,sprite->tileid,sprite->xform);
+  uint8_t tileid=sprite->tileid;
+  uint8_t xform=0;
+  switch (SPRITE->facedir) {
+    case 0x02: break; // Down, the natural direction.
+    case 0x40: tileid+=1; break; // Up.
+    case 0x10: tileid+=2; break; // Left, natural orientation of the tile.
+    case 0x08: tileid+=2; xform=EGG_XFORM_XREV; break; // Right. Left but flopped.
+  }
+  switch (SPRITE->animframe) {
+    case 1: tileid+=0x10; break;
+    case 3: tileid+=0x20; break;
+  }
+  graf_tile(&g.graf,dstx,dsty,tileid,xform);
 }
 
 /* Modal gains or loses focus.
@@ -68,9 +107,9 @@ static void _hero_render(struct sprite *sprite,int dstx,int dsty) {
  
 static void _hero_focus(struct sprite *sprite,int focus) {
   if (!focus) {
-    //TODO Return to neutral animation frame.
-    //TODO Drop any user-driven activity. Walking or item.
     SPRITE->input=0;
+    SPRITE->animclock=0;
+    SPRITE->animframe=0;
   }
 }
 
@@ -92,12 +131,23 @@ const struct sprite_type sprite_type_hero={
  
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput) {
   SPRITE->input=input;
-  //TODO Impulse actions?
-  //XXX
-  if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
-    if (g.hp<g.maxhp) g.hp++;
-  }
-  if ((input&EGG_BTN_WEST)&&!(pvinput&EGG_BTN_WEST)) {
-    if (g.hp>0) g.hp--;
+  
+  // When a dpad button goes ON, facedir changes immediately.
+  if ((input&EGG_BTN_LEFT)&&!(pvinput&EGG_BTN_LEFT)) SPRITE->facedir=0x10;
+  if ((input&EGG_BTN_RIGHT)&&!(pvinput&EGG_BTN_RIGHT)) SPRITE->facedir=0x08;
+  if ((input&EGG_BTN_UP)&&!(pvinput&EGG_BTN_UP)) SPRITE->facedir=0x40;
+  if ((input&EGG_BTN_DOWN)&&!(pvinput&EGG_BTN_DOWN)) SPRITE->facedir=0x02;
+  
+  // When a dpad button goes OFF, we're facing that way, and one other dpad button is held, face the one still held.
+  if (
+    (!(input&EGG_BTN_LEFT)&&(pvinput&EGG_BTN_LEFT)&&(SPRITE->facedir==0x10))||
+    (!(input&EGG_BTN_RIGHT)&&(pvinput&EGG_BTN_RIGHT)&&(SPRITE->facedir==0x08))||
+    (!(input&EGG_BTN_UP)&&(pvinput&EGG_BTN_UP)&&(SPRITE->facedir==0x40))||
+    (!(input&EGG_BTN_DOWN)&&(pvinput&EGG_BTN_DOWN)&&(SPRITE->facedir==0x02))
+  ) {
+    if (input&EGG_BTN_LEFT) SPRITE->facedir=0x10;
+    else if (input&EGG_BTN_RIGHT) SPRITE->facedir=0x08;
+    else if (input&EGG_BTN_UP) SPRITE->facedir=0x40;
+    else if (input&EGG_BTN_DOWN) SPRITE->facedir=0x02;
   }
 }

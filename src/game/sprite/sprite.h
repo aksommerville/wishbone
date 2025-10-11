@@ -54,6 +54,9 @@ const struct sprite_type *sprite_type_by_sprtype(int sprtype);
 FOR_EACH_SPRTYPE
 #undef _
 
+// Physics.
+int sprite_move(struct sprite *sprite,double dx,double dy);
+
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput);
 
 #endif
