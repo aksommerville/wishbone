@@ -131,6 +131,11 @@ static void _play_update(struct modal *modal,double elapsed,int input,int pvinpu
   play_update_sprites(modal,elapsed);
   sprite_reap_defunct();
   play_check_transitions(modal);
+  
+  if (g.map_dirty) {
+    g.map_dirty=0;
+    play_render_bgbits(modal);
+  }
 }
 
 /* Sort sprites.

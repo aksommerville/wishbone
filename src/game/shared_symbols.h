@@ -10,10 +10,13 @@
 #define NS_sys_maph 11
 #define NS_sys_bgcolor 0x000000
 
-#define CMD_map_image     0x20 /* u16:imageid */
-#define CMD_map_neighbors 0x60 /* u16:west, u16:east, u16:north, u16:south */
-#define CMD_map_sprite    0x61 /* u16:position, u16:spriteid, u32:arg */
-#define CMD_map_door      0x62 /* u16:position, u16:mapid, u16:dstposition, u16:arg */
+#define CMD_map_image      0x20 /* u16:imageid */
+#define CMD_map_switchable 0x40 /* u16:position u8:flagid u8:invert */
+#define CMD_map_treadle    0x41 /* u16:position u8:flagid u8:invert */
+#define CMD_map_stompbox   0x42 /* u16:position u8:flagid u8:invert */
+#define CMD_map_neighbors  0x60 /* u16:west, u16:east, u16:north, u16:south */
+#define CMD_map_sprite     0x61 /* u16:position, u16:spriteid, u32:arg */
+#define CMD_map_door       0x62 /* u16:position, u16:mapid, u16:dstposition, u16:arg */
 
 #define CMD_sprite_solid 0x01 /* */
 #define CMD_sprite_image 0x20 /* u16:imageid */
@@ -40,5 +43,13 @@
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero)
+
+#define NS_flag_zero 0
+#define NS_flag_one 1
+#define NS_flag_testing1 2
+#define NS_flag_testing2 3
+#define NS_flag_testing3 4
+#define NS_flag_testing4 5
+#define NS_FLAG_COUNT 6
 
 #endif

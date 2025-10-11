@@ -13,6 +13,9 @@
 #define FBW 320
 #define FBH 192
 
+// Quantized positions held by some sprite. We only track interesting ones.
+#define QPOS_LIMIT 32
+
 struct map {
   int rid;
   int imageid;
@@ -44,8 +47,12 @@ extern struct g {
   struct sprite *hero; // WEAK, OPTIONAL, modal_play populates at the start of each frame.
   
   struct map *map; // WEAK, owned by mapv.
+  int map_dirty; // Set when you change (g.map->v) so modal_play knows to rerender the background.
   int hp,maxhp;
   int item;
+  uint8_t flags[(NS_FLAG_COUNT+7)>>3];
+  struct qpos { int x,y; } qposv[QPOS_LIMIT];
+  int qposc;
 } g;
 
 int res_load();
@@ -54,5 +61,11 @@ int res_get(void *dstpp,int tid,int rid);
 struct map *res_get_map(int rid);
 
 int load_map(int mapid);
+
+int flag_get(int flagid);
+int flag_set(int flagid,int v); // => nonzero if changed
+
+void qpos_press(int x,int y);
+void qpos_release(int x,int y);
 
 #endif

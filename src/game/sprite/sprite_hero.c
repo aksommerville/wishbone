@@ -3,6 +3,7 @@
 struct sprite_hero {
   struct sprite hdr;
   int input;
+  int qx,qy;
 };
 
 #define SPRITE ((struct sprite_hero*)sprite)
@@ -17,7 +18,24 @@ static void _hero_del(struct sprite *sprite) {
  */
  
 static int _hero_init(struct sprite *sprite) {
+  SPRITE->qx=-1;
+  SPRITE->qy=-1;
   return 0;
+}
+
+/* Quantize my position and if it's changed, trigger POI.
+ */
+ 
+static void hero_check_quantized_position(struct sprite *sprite) {
+  int x=(int)sprite->x; if (sprite->x<0.0) x=-1;
+  int y=(int)sprite->y; if (sprite->y<0.0) y=-1;
+  if (x>=NS_sys_mapw) x=-1;
+  if (y>=NS_sys_maph) y=-1;
+  if ((x==SPRITE->qx)&&(y==SPRITE->qy)) return;
+  qpos_release(SPRITE->qx,SPRITE->qy);
+  SPRITE->qx=x;
+  SPRITE->qy=y;
+  qpos_press(x,y);
 }
 
 /* Update.
@@ -34,6 +52,7 @@ static void _hero_update(struct sprite *sprite,double elapsed) {
     case EGG_BTN_UP: sprite->y-=speed*elapsed; break;
     case EGG_BTN_DOWN: sprite->y+=speed*elapsed; break;
   }
+  hero_check_quantized_position(sprite);
 }
 
 /* Render.

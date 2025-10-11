@@ -34,7 +34,7 @@ Or maybe just keep the educators static, that's less to think about.
 
 - [x] Transitions. modal_play.c
 - [x] Status bar. modal_play.c
-- [ ] Flags.
+- [x] Flags.
 - [ ] Proper hero motion and physics.
 - [ ] Hero actions.
 - - [ ] stab
@@ -44,6 +44,7 @@ Or maybe just keep the educators static, that's less to think about.
 - - [ ] wand
 - - [ ] slingshot
 - - [ ] lockpick
+- [x] POI-only treadles and stompboxes.
 
 ## Notes
 

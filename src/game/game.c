@@ -8,7 +8,8 @@ int load_map(int mapid) {
   if (!map) return -1;
   
   if (g.map) {
-    //TODO Outbound triggers for old map?
+    // Drop qpos.
+    while (g.qposc>0) qpos_release(g.qposv[g.qposc-1].x,g.qposv[g.qposc-1].y);
   }
   
   /* Delete all sprites.
@@ -28,6 +29,7 @@ int load_map(int mapid) {
    */
   memcpy(map->v,map->kv,NS_sys_mapw*NS_sys_maph);
   
+  g.map_dirty=0; // I guess technically it is dirty, but modal_play already knows it's changing.
   g.map=map;
   if (hero) sprite_relist(hero);
   
@@ -38,6 +40,18 @@ int load_map(int mapid) {
   struct cmdlist_entry cmd;
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
+
+      case CMD_map_switchable:
+      case CMD_map_stompbox: {
+          int x=cmd.arg[0];
+          int y=cmd.arg[1];
+          if ((x<NS_sys_mapw)&&(y<NS_sys_maph)) {
+            if (flag_get(cmd.arg[2])!=cmd.arg[3]) map->v[y*NS_sys_mapw+x]++;
+          }
+        } break;
+        
+      // treadles reset when they become visible.
+      case CMD_map_treadle: flag_set(cmd.arg[2],cmd.arg[3]); break;
 
       case CMD_map_sprite: {
           double x=cmd.arg[0]+0.5;
@@ -53,7 +67,6 @@ int load_map(int mapid) {
         
       case CMD_map_door: break;//TODO? u16:position, u16:mapid, u16:dstposition, u16:arg
       
-      //TODO switches and similar poi effect
     }
   }
   
@@ -61,4 +74,137 @@ int load_map(int mapid) {
   //TODO generic inbound triggers
   
   return 0;
+}
+
+/* Recheck POI after a flag change.
+ */
+ 
+static void recheck_poi(int flagid,int v) {
+  if (!g.map) return;
+  struct cmdlist_reader reader;
+  if (cmdlist_reader_init(&reader,g.map->cmd,g.map->cmdc)<0) return;
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
+    switch (cmd.opcode) {
+
+      // Stompboxes change when something else actuates the same flag. A little weird but we have to.
+      // Treadles do not.
+      case CMD_map_switchable:
+      case CMD_map_stompbox: {
+          if (cmd.arg[2]!=flagid) break;
+          int x=cmd.arg[0];
+          int y=cmd.arg[1];
+          if ((x<NS_sys_mapw)&&(y<NS_sys_maph)) {
+            int p=y*NS_sys_mapw+x;
+            if (flag_get(cmd.arg[2])!=cmd.arg[3]) g.map->v[p]=g.map->kv[p]+1;
+            else g.map->v[p]=g.map->kv[p];
+            g.map_dirty=1;
+          }
+        } break;
+    }
+  }
+}
+
+/* Flags.
+ */
+ 
+int flag_get(int flagid) {
+  if ((flagid<0)||(flagid>=NS_FLAG_COUNT)) return 0;
+  return (g.flags[flagid>>3]&(1<<(flagid&7)))?1:0;
+}
+
+int flag_set(int flagid,int v) {
+  if ((flagid<2)||(flagid>=NS_FLAG_COUNT)) return 0; // sic 2, flags 0 and 1 are immutable
+  uint8_t *p=g.flags+(flagid>>3);
+  uint8_t mask=1<<(flagid&7);
+  if (v) {
+    if ((*p)&mask) return 0;
+    (*p)|=mask;
+  } else {
+    if (!((*p)&mask)) return 0;
+    (*p)&=~mask;
+  }
+  
+  // Notify sprites.
+  struct sprite **spritep=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;spritep++) {
+    struct sprite *sprite=*spritep;
+    if (sprite->defunct) continue;
+    if (!sprite->type->flag) continue;
+    sprite->type->flag(sprite,flagid,v);
+  }
+  
+  recheck_poi(flagid,v?1:0);
+  return 1;
+}
+
+/* Quantized cell is newly held or released.
+ */
+ 
+static int qpos_set_flag(int x,int y,int v) {
+  int result=0;
+  struct cmdlist_reader reader;
+  if (cmdlist_reader_init(&reader,g.map->cmd,g.map->cmdc)<0) return 0;
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
+    switch (cmd.opcode) {
+    
+      case CMD_map_treadle: {
+          if (x!=cmd.arg[0]) break;
+          if (y!=cmd.arg[1]) break;
+          result++;
+          flag_set(cmd.arg[2],v!=cmd.arg[3]);
+          int p=y*NS_sys_mapw+x;
+          if (v==cmd.arg[3]) g.map->v[p]=g.map->kv[p];
+          else g.map->v[p]=g.map->kv[p]+1;
+          g.map_dirty=1;
+        } break;
+      
+      case CMD_map_stompbox: {
+          if (x!=cmd.arg[0]) break;
+          if (y!=cmd.arg[1]) break;
+          result++;
+          if (v==1) { // Stompboxes only change the flag on entry.
+            flag_set(cmd.arg[2],flag_get(cmd.arg[2])?0:1);
+          }
+        } break;
+    }
+  }
+  return result;
+}
+
+/* Registry of transient quantized positions held by a sprite.
+ */
+ 
+void qpos_press(int x,int y) {
+  if ((x<0)||(y<0)||(x>=NS_sys_mapw)||(y>=NS_sys_maph)) return;
+  if (g.qposc>=QPOS_LIMIT) return;
+  struct qpos *qpos=g.qposv;
+  int i=g.qposc,already=0;
+  for (;i-->0;qpos++) if ((qpos->x==x)&&(qpos->y==y)) { already=1; break; }
+  qpos->x=x;
+  qpos->y=y;
+  g.qposc++;
+  if (!already) {
+    if (!qpos_set_flag(x,y,1)) {
+      // Nothing interesting here, don't record it.
+      g.qposc--;
+    }
+  }
+}
+
+void qpos_release(int x,int y) {
+  int i=g.qposc,rmc=0;
+  struct qpos *qpos=g.qposv+i-1;
+  for (;i-->0;qpos--) {
+    if (qpos->x!=x) continue;
+    if (qpos->y!=y) continue;
+    if (rmc) return; // We removed one but it's still held.
+    rmc++;
+    g.qposc--;
+    memmove(qpos,qpos+1,sizeof(struct qpos)*(g.qposc-i));
+  }
+  if (!rmc) return; // No record of it.
+  qpos_set_flag(x,y,0);
 }

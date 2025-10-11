@@ -32,7 +32,9 @@ struct sprite_type {
   void (*render)(struct sprite *sprite,int dstx,int dsty);
   
   void (*focus)(struct sprite *sprite,int focus);
-  //TODO Other signal hooks.
+  
+  // You don't subscribe to flags individually, but a sprite can receive *all* flag changes.
+  void (*flag)(struct sprite *sprite,int flagid,int v);
 };
 
 /* Only the sprite stack itself should call del or new.
