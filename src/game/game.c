@@ -1,5 +1,21 @@
 #include "wishbone.h"
 
+/* Replace (g.physics).
+ */
+ 
+static void load_physics(int tilesheetid) {
+  memset(g.physics,0,sizeof(g.physics));
+  const void *src=0;
+  int srcc=res_get(&src,EGG_TID_tilesheet,tilesheetid);
+  struct tilesheet_reader reader;
+  if (tilesheet_reader_init(&reader,src,srcc)<0) return;
+  struct tilesheet_entry entry;
+  while (tilesheet_reader_next(&entry,&reader)>0) {
+    if (entry.tableid!=NS_tilesheet_physics) continue;
+    memcpy(g.physics+entry.tileid,entry.v,entry.c);
+  }
+}
+
 /* Load map.
  */
  
@@ -28,6 +44,12 @@ int load_map(int mapid) {
   /* Restore all cells to their default.
    */
   memcpy(map->v,map->kv,NS_sys_mapw*NS_sys_maph);
+  
+  /* If the maps have different imageid, replace (g.physics).
+   */
+  if (!g.map||(g.map->imageid!=map->imageid)) {
+    load_physics(map->imageid);
+  }
   
   g.map_dirty=0; // I guess technically it is dirty, but modal_play already knows it's changing.
   g.map=map;

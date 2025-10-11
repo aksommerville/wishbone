@@ -233,8 +233,8 @@ static void play_render_status_bar(struct modal *modal,int x,int y,int w,int h) 
   
   uint8_t itemtileid=0;
   switch (g.item) {
-    case NS_item_none: itemtileid=0x44; break;
-    case NS_item_wishbone: itemtileid=0x45; break;
+    case 0: itemtileid=0x44; break;
+    case NS_flag_wishbone: itemtileid=0x45; break;
   }
   if (itemtileid) {
     graf_tile(&g.graf,FBW-NS_sys_tilesize,y+(h>>1),itemtileid,0);

@@ -1,6 +1,7 @@
 #include "game/wishbone.h"
 
 #define WALK_SPEED 6.000
+#define CORRECTION_SPEED 1.000
 
 struct sprite_hero {
   struct sprite hdr;
@@ -33,13 +34,47 @@ static int _hero_init(struct sprite *sprite) {
  */
  
 static void hero_update_walk(struct sprite *sprite,double elapsed) {
+
+  int walkdx=0,walkdy=0,xok=0,yok=0;
   switch (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
-    case EGG_BTN_LEFT: sprite_move(sprite,-WALK_SPEED*elapsed,0.0); break;
-    case EGG_BTN_RIGHT: sprite_move(sprite,WALK_SPEED*elapsed,0.0); break;
+    case EGG_BTN_LEFT: walkdx=-1; xok=sprite_move(sprite,-WALK_SPEED*elapsed,0.0); break;
+    case EGG_BTN_RIGHT: walkdx=1; xok=sprite_move(sprite,WALK_SPEED*elapsed,0.0); break;
   }
   switch (SPRITE->input&(EGG_BTN_UP|EGG_BTN_DOWN)) {
-    case EGG_BTN_UP: sprite_move(sprite,0.0,-WALK_SPEED*elapsed); break;
-    case EGG_BTN_DOWN: sprite_move(sprite,0.0,WALK_SPEED*elapsed); break;
+    case EGG_BTN_UP: walkdy=-1; yok=sprite_move(sprite,0.0,-WALK_SPEED*elapsed); break;
+    case EGG_BTN_DOWN: walkdy=1; yok=sprite_move(sprite,0.0,WALK_SPEED*elapsed); break;
+  }
+  
+  // If movement was rejected and was on just one axis, cheat the other axis toward a half-meter interval.
+  // Prefer one-meter intervals over halves.
+  // To make things a bit more confusing, remember that the whole-meter quantization has our center at 0.5.
+  const double half_meter_radius=0.100; // 0.250 would balance halves and wholes exactly; 0.000 would use wholes only.
+  if (walkdx&&!walkdy&&!xok) {
+    double slop=sprite->y-(int)sprite->y;
+    double targety=sprite->y;
+    if (slop<half_meter_radius) targety=(int)sprite->y;
+    else if (slop>1.0-half_meter_radius) targety=(int)sprite->y+1.0;
+    else targety=(int)sprite->y+0.5;
+    if (sprite->y<targety) {
+      sprite_move(sprite,0.0,CORRECTION_SPEED*elapsed);
+      if (sprite->y>targety) sprite->y=targety;
+    } else if (sprite->y>targety) {
+      sprite_move(sprite,0.0,-CORRECTION_SPEED*elapsed);
+      if (sprite->y<targety) sprite->y=targety;
+    }
+  } else if (walkdy&&!walkdx&&!yok) {
+    double slop=sprite->x-(int)sprite->x;
+    double targetx=sprite->x;
+    if (slop<half_meter_radius) targetx=(int)sprite->x;
+    else if (slop>1.0-half_meter_radius) targetx=(int)sprite->x+1.0;
+    else targetx=(int)sprite->x+0.5;
+    if (sprite->x<targetx) {
+      sprite_move(sprite,CORRECTION_SPEED*elapsed,0.0);
+      if (sprite->x>targetx) sprite->x=targetx;
+    } else if (sprite->x>targetx) {
+      sprite_move(sprite,-CORRECTION_SPEED*elapsed,0.0);
+      if (sprite->x<targetx) sprite->x=targetx;
+    }
   }
 }
 

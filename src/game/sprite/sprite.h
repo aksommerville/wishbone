@@ -18,7 +18,7 @@ struct sprite {
   int spriteid; // Resource, if we were spawned that way.
   const void *res; // resource (includes signature; use sprite_reader_init, not cmdlist_reader_init)
   int resc;
-  int solid;
+  uint32_t phymask;
 };
 
 struct sprite_type {
@@ -35,6 +35,8 @@ struct sprite_type {
   
   // You don't subscribe to flags individually, but a sprite can receive *all* flag changes.
   void (*flag)(struct sprite *sprite,int flagid,int v);
+  
+  void (*bump)(struct sprite *sprite,struct sprite *bumper);
 };
 
 /* Only the sprite stack itself should call del or new.

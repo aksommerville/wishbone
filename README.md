@@ -35,7 +35,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Transitions. modal_play.c
 - [x] Status bar. modal_play.c
 - [x] Flags.
-- [ ] Proper hero motion and physics.
+- [x] Proper hero motion and physics.
 - [ ] Hero actions.
 - - [ ] stab
 - - [ ] swing

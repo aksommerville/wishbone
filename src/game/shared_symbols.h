@@ -18,11 +18,12 @@
 #define CMD_map_sprite     0x61 /* u16:position, u16:spriteid, u32:arg */
 #define CMD_map_door       0x62 /* u16:position, u16:mapid, u16:dstposition, u16:arg */
 
-#define CMD_sprite_solid 0x01 /* */
-#define CMD_sprite_image 0x20 /* u16:imageid */
-#define CMD_sprite_tile  0x21 /* u8:tileid, u8:xform */
-#define CMD_sprite_type  0x22 /* u16:sprtype */
-#define CMD_sprite_layer 0x23 /* u16:layer */
+#define CMD_sprite_animate   0x01 /* ; treasure */
+#define CMD_sprite_image     0x20 /* u16:imageid */
+#define CMD_sprite_tile      0x21 /* u8:tileid, u8:xform */
+#define CMD_sprite_type      0x22 /* u16:sprtype */
+#define CMD_sprite_layer     0x23 /* u16:layer */
+#define CMD_sprite_phymask   0x40 /* b32:physics */
 
 #define NS_tilesheet_physics 1
 #define NS_tilesheet_family 0
@@ -33,23 +34,22 @@
 #define NS_physics_solid 1
 #define NS_physics_water 2
 
-#define NS_item_none 0
-#define NS_item_wishbone 1
+#define NS_prize_none  0
+#define NS_prize_heart 1
 
 // Editor uses the comment after a 'sprtype' symbol as a prompt in the new-sprite modal.
 // Should match everything after 'spriteid' in the CMD_map_sprite args.
-#define NS_sprtype_dummy 0 /* (u32)0 */
-#define NS_sprtype_hero  1 /* (u32)0 */
+#define NS_sprtype_dummy      0 /* (u32)0 */
+#define NS_sprtype_hero       1 /* (u32)0 */
+#define NS_sprtype_treasure   2 /* (u8:flag)zero (u8:prize)none (u16)0 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
-  _(hero)
+  _(hero) \
+  _(treasure)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1
-#define NS_flag_testing1 2
-#define NS_flag_testing2 3
-#define NS_flag_testing3 4
-#define NS_flag_testing4 5
-#define NS_FLAG_COUNT 6
+#define NS_flag_wishbone 2
+#define NS_FLAG_COUNT 3
 
 #endif

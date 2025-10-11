@@ -47,9 +47,10 @@ extern struct g {
   struct sprite *hero; // WEAK, OPTIONAL, modal_play populates at the start of each frame.
   
   struct map *map; // WEAK, owned by mapv.
+  uint8_t physics[256];
   int map_dirty; // Set when you change (g.map->v) so modal_play knows to rerender the background.
   int hp,maxhp;
-  int item;
+  int item; // Zero for none, or flagid.
   uint8_t flags[(NS_FLAG_COUNT+7)>>3];
   struct qpos { int x,y; } qposv[QPOS_LIMIT];
   int qposc;
@@ -67,5 +68,8 @@ int flag_set(int flagid,int v); // => nonzero if changed
 
 void qpos_press(int x,int y);
 void qpos_release(int x,int y);
+
+#define SFX(tag) wishbone_sound(RID_sound_##tag);
+void wishbone_sound(int rid);
 
 #endif

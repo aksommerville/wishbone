@@ -22,8 +22,9 @@ int egg_client_init() {
   srand_auto();
   
   //TODO Start with modal_type_hello, and have it do these before dismissing:
-  g.hp=g.maxhp=5;
-  g.item=NS_item_wishbone;
+  g.maxhp=5;
+  g.hp=3;
+  g.item=0;//NS_flag_wishbone;
   g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
   if (load_map(RID_map_start)<0) return -1;
   if (!modal_spawn(&modal_type_play)) return -1;
@@ -107,4 +108,12 @@ void egg_client_render() {
   }
   
   graf_flush(&g.graf);
+}
+
+/* Sound effect.
+ */
+ 
+void wishbone_sound(int rid) {
+  //TODO limiter? pan?
+  egg_play_sound(rid,1.0,0.0);
 }

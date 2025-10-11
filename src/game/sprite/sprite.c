@@ -30,11 +30,11 @@ struct sprite *sprite_new(const struct sprite_type *type,double x,double y,uint3
     struct cmdlist_entry cmd;
     while (cmdlist_reader_next(&cmd,&reader)>0) {
       switch (cmd.opcode) {
-        case CMD_sprite_solid: sprite->solid=1; break;
         case CMD_sprite_image: sprite->imageid=(cmd.arg[0]<<8)|cmd.arg[1]; break;
         case CMD_sprite_tile: sprite->tileid=cmd.arg[0]; sprite->xform=cmd.arg[1]; break;
         case CMD_sprite_type: break; // Already managed by our caller, hopefully.
         case CMD_sprite_layer: sprite->layer=(cmd.arg[0]<<8)|cmd.arg[1]; break;
+        case CMD_sprite_phymask: sprite->phymask=(cmd.arg[0]<<24)|(cmd.arg[1]<<16)|(cmd.arg[2]<<8)|cmd.arg[3]; break;
       }
     }
   }
@@ -51,6 +51,7 @@ struct sprite *sprite_new(const struct sprite_type *type,double x,double y,uint3
  */
  
 static struct sprite *sprite_list(struct sprite *sprite) {
+  if (!sprite) return 0;
   if (g.spritec>=g.spritea) {
     int na=g.spritea+32;
     if (na>INT_MAX/sizeof(void*)) { sprite_del(sprite); return 0; }

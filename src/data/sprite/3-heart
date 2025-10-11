@@ -1,0 +1,4 @@
+type (u16:sprtype)treasure
+image image:sprites
+tile 80 0
+animate

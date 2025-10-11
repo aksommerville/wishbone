@@ -1,5 +1,5 @@
 type (u16:sprtype)hero
 image image:sprites
 tile 0x00 0x00
-solid
 layer (u16)100
+phymask (b32:physics)solid,water
