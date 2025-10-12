@@ -47,7 +47,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] POI-only treadles and stompboxes.
 - [ ] It's hard to perform SWING, and I keep hitting VAULT instead.
 - [x] Hero death.
-- [ ] Boomerang: Collect treasures and hurt foes.
+- [x] Boomerang: Collect treasures and hurt foes.
 - [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
 - [ ] Sound effects.
 - [ ] Hello modal.

@@ -58,6 +58,8 @@ void sprite_relist(struct sprite *sprite); // only game.c should use this, to re
 struct sprite *sprite_spawn_type(const struct sprite_type *type,double x,double y,uint32_t arg);
 struct sprite *sprite_spawn_res(int spriteid,double x,double y,uint32_t arg);
 
+int sprite_is_resident(const struct sprite *sprite);
+
 const struct sprite_type *sprite_type_by_sprtype(int sprtype);
 
 #define _(tag) extern const struct sprite_type sprite_type_##tag;

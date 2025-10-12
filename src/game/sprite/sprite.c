@@ -94,6 +94,17 @@ struct sprite *sprite_spawn_res(int spriteid,double x,double y,uint32_t arg) {
   return sprite_list(sprite);
 }
 
+/* Validate live sprite.
+ */
+
+int sprite_is_resident(const struct sprite *sprite) {
+  if (!sprite) return 0;
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) if (*p==sprite) return 1;
+  return 0;
+}
+
 /* Reap defunct sprites.
  */
  

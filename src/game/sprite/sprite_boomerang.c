@@ -11,6 +11,7 @@ struct sprite_boomerang {
   double dx,dy;
   double return_clock;
   uint8_t rotation;
+  struct sprite *pumpkin; // WEAK and untrustworthy: Verify residence before dereferencing.
 };
 
 #define SPRITE ((struct sprite_boomerang*)sprite)
@@ -34,12 +35,21 @@ static int _boomerang_init(struct sprite *sprite) {
   return 0;
 }
 
+static int sprite_is_pumpkin(const struct sprite *pumpkindidate) {
+  if (pumpkindidate->type==&sprite_type_treasure) return 1;
+  return 0;
+}
+
 static void _boomerang_update(struct sprite *sprite,double elapsed) {
   SPRITE->rotation+=10;
+  
+  // Flying away?
   if (SPRITE->return_clock>0.0) {
     SPRITE->return_clock-=elapsed;
     sprite->x+=SPRITE->dx*elapsed;
     sprite->y+=SPRITE->dy*elapsed;
+    
+  // Return home.
   } else if (g.hero) {
     const double CLOSE_ENOUGH=0.250; // Must be larger than our quantum of motion, which is kind of fuzzy.
     double dx=g.hero->x-sprite->x;
@@ -54,8 +64,58 @@ static void _boomerang_update(struct sprite *sprite,double elapsed) {
     dy/=distance;
     sprite->x+=dx*SPEED*elapsed;
     sprite->y+=dy*SPEED*elapsed;
+  
+  // Unlikely but possible: If the hero dies, we die too.
+  } else {
+    sprite->defunct=1;
+    return;
   }
-  //TODO damage monsters, pick up items, all the things boomerangs really do
+  
+  // If we have a pumpkin already, update its position.
+  if (SPRITE->pumpkin) {
+    if (!sprite_is_resident(SPRITE->pumpkin)) {
+      SPRITE->pumpkin=0;
+    } else {
+      SPRITE->pumpkin->x=sprite->x;
+      SPRITE->pumpkin->y=sprite->y;
+    }
+    
+  // Check for pumpkins and damage.
+  // Damage can hit multiple parties, but only when we're unladen.
+  } else {
+    const double radius=0.500; // We look considerably smaller than this, but the monsters are typically the full square meter.
+    double hl=sprite->x-radius;
+    double hr=sprite->x+radius;
+    double ht=sprite->y-radius;
+    double hb=sprite->y+radius;
+    struct sprite **p=g.spritev;
+    int i=g.spritec;
+    for (;i-->0;p++) {
+      struct sprite *other=*p;
+      if (other->defunct) continue;
+      if (other->x<hl) continue;
+      if (other->x>hr) continue;
+      if (other->y<ht) continue;
+      if (other->y>hb) continue;
+      if (sprite_is_pumpkin(other)) {
+        SPRITE->pumpkin=other;
+        SPRITE->return_clock=0.0;
+        break;
+      } else if (other->type->whack) {
+        double nx=other->x-sprite->x;
+        double ny=other->y-sprite->y;
+        if ((nx<-0.001)||(nx>0.001)||(ny<-0.001)||(ny>0.001)) {
+          double distance=sqrt(nx*nx+ny*ny);
+          nx/=distance;
+          ny/=distance;
+        }
+        if (other->type->whack(other,sprite,nx,ny)) {
+          SPRITE->return_clock=0.0;
+          break;
+        }
+      }
+    }
+  }
 }
 
 static void _boomerang_render(struct sprite *sprite,int dstx,int dsty) {

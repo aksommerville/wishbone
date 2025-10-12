@@ -127,7 +127,6 @@ int load_map(int mapid) {
     for (;i-->0;f++) {
       if (f->mapid!=g.map->rid) continue;
       struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,f->x+0.5,f->y+0.5,(f->flagid<<24)|(f->forgottenid<<8));
-      fprintf(stderr,"created forgottenid=%d sprite=%p\n",f->forgottenid,treasure);
     }
   }
   
