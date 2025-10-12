@@ -532,6 +532,7 @@ static void hero_bat(struct sprite *sprite) {
 }
 
 /* Check SWING, begin if warranted and return nonzero.
+ * Call only when already in STAB state.
  */
  
 static int is_single_dpad(int input) {
@@ -544,38 +545,37 @@ static int is_single_dpad(int input) {
   }
   return 0;
 }
+
+static int is_same_axis(int a,int b) {
+  switch (a) {
+    case EGG_BTN_LEFT:
+    case EGG_BTN_RIGHT: return ((b==EGG_BTN_LEFT)||(b==EGG_BTN_RIGHT));
+    case EGG_BTN_UP:
+    case EGG_BTN_DOWN: return ((b==EGG_BTN_UP)||(b==EGG_BTN_DOWN));
+  }
+  return 0;
+}
  
 static int hero_check_swing(struct sprite *sprite) {
-  //TODO I still don't like this trigger. Too hard to hit, and it conflicts annoyingly with VAULT.
-  //TODO ooh ooh! How about you start as STAB, then tap the off-axis within 250ms or so after stabbing?
-  // Most recent pressed must be [axisA,axisB,south], within some minimum interval. Intervening releases are ok.
-  int dp=-1,got_swing=0,axisb=0,axisa=0;
-  double starttime;
-  for (;dp>=-HERO_EVENT_LIMIT;dp--) {
-    const struct hero_event *event=hero_get_event(sprite,dp);
-    if (!event->press) continue;
-    if (!got_swing) {
-      if (event->press!=EGG_BTN_SOUTH) return 0;
-      got_swing=1;
-    } else if (!axisb) {
-      if (!is_single_dpad(axisb=(event->press&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN)))) return 0;
-    } else {
-      if (!is_single_dpad(axisa=(event->press&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN)))) return 0;
-      starttime=event->time;
-      break;
-    }
-  }
-  if (!axisa) return 0;
-  if (axisa&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
-    if (axisb&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) return 0; // Nope, both horizontal.
-  } else {
-    if (axisb&(EGG_BTN_UP|EGG_BTN_DOWN)) return 0; // Nope, both vertical.
-  }
-  double duration=SPRITE->dumbclock-starttime;
-  if (duration>SWING_MINIMUM_TIME) return 0;
+  // Stab, then quickly press a perpendicular direction.
+  if (!SPRITE->stabdir) return 0;
+  const struct hero_event *eturn=hero_get_event(sprite,-1);
+  const struct hero_event *estab=hero_get_event(sprite,-2);
+  double duration=SPRITE->dumbclock-estab->time;
+  if (duration>0.250) return 0;
+  if (!(estab->press&EGG_BTN_SOUTH)) return 0; // Must be other events after the stab.
+  int axis=eturn->press&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN);
+  if (!is_single_dpad(axis)) return 0;
+  if (is_same_axis(SPRITE->stabdir,axis)) return 0;
   // OK, we're doing it.
-  SPRITE->stabdir=axisb;
-  SPRITE->swingdir=axisa;
+  SPRITE->swingdir=SPRITE->stabdir;
+  SPRITE->stabdir=axis;
+  switch (axis) {
+    case EGG_BTN_LEFT: SPRITE->facedir=0x10; break;
+    case EGG_BTN_RIGHT: SPRITE->facedir=0x08; break;
+    case EGG_BTN_UP: SPRITE->facedir=0x40; break;
+    case EGG_BTN_DOWN: SPRITE->facedir=0x02; break;
+  }
   hero_bat(sprite);
   SPRITE->action_state=ACTION_STATE_SWING;
   SPRITE->actionclock=0.0;
@@ -609,22 +609,23 @@ static void hero_update_wishbone(struct sprite *sprite,double elapsed) {
     case ACTION_STATE_WAND: hero_update_wand(sprite,elapsed); return;
     case ACTION_STATE_SLINGSHOT: hero_update_slingshot(sprite,elapsed); return;
     
-    // STAB,SWING: End action on release, or begin WAND if held long enough.
+    // STAB: End action on release, or begin WAND if held long enough.
     // A held stroke is noop, it doesn't continue hurting foes or anything. Only reason to hold is to enter the WAND state.
-    // Also tick (actionclock); SWING uses it for the swash animation.
-    case ACTION_STATE_STAB:
-    case ACTION_STATE_SWING: {
+    case ACTION_STATE_STAB: {
         SPRITE->actionclock+=elapsed;
         if (!(SPRITE->input&EGG_BTN_SOUTH)) {
           SPRITE->action_state=0;
         } else {
           hero_check_wand(sprite);
+          hero_check_swing(sprite);
         }
       } return;
       
-    // BOOMERANG,LOCKPICK: No activity, just wait for the hold to release.
+    // SWING,BOOMERANG,LOCKPICK: No activity, just wait for the hold to release.
+    case ACTION_STATE_SWING:
     case ACTION_STATE_BOOMERANG:
     case ACTION_STATE_LOCKPICK: {
+        SPRITE->actionclock+=elapsed; // SWING needs this.
         if (!(SPRITE->input&EGG_BTN_SOUTH)) {
           SPRITE->action_state=0;
         }
@@ -642,7 +643,6 @@ static void hero_update_wishbone(struct sprite *sprite,double elapsed) {
       if (hero_check_lockpick(sprite)) return;
       if (hero_check_boomerang(sprite)) return;
       if (hero_check_vault(sprite)) return;
-      if (hero_check_swing(sprite)) return;
       hero_begin_stab(sprite);
     }
   }
