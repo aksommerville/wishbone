@@ -4,6 +4,7 @@
 #include "egg/egg.h"
 #include "opt/stdlib/egg-stdlib.h"
 #include "opt/graf/graf.h"
+#include "opt/font/font.h"
 #include "opt/res/res.h"
 #include "egg_res_toc.h"
 #include "shared_symbols.h"
@@ -37,6 +38,7 @@ extern struct g {
   int mapc,mapa;
   
   struct graf graf;
+  struct font *font;
   int pvinput;
   int framec;
   
@@ -70,6 +72,7 @@ int res_load();
 int res_search(int tid,int rid);
 int res_get(void *dstpp,int tid,int rid);
 struct map *res_get_map(int rid);
+int res_get_string(void *dstpp,int rid,int strix);
 
 int load_map(int mapid);
 

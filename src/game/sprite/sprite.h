@@ -61,6 +61,7 @@ int sprite_move(struct sprite *sprite,double dx,double dy);
 int sprite_test_position(const struct sprite *sprite); // 0=collide, 1=ok
 
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput);
+void sprite_hero_injure(struct sprite *sprite);
 
 int sprite_boomerang_exists();
 

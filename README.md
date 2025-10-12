@@ -36,17 +36,17 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Status bar. modal_play.c
 - [x] Flags.
 - [x] Proper hero motion and physics.
-- [ ] Hero actions.
+- [x] Hero actions.
 - - [x] stab
 - - [x] swing
 - - [x] polevault
 - - [x] boomerang
 - - [x] wand
 - - [x] slingshot
-- - [ ] lockpick
+- - [x] lockpick
 - [x] POI-only treadles and stompboxes.
 - [ ] Hero death.
-- [ ] Music.
+- [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
 - [ ] Sound effects.
 - [ ] Hello modal.
 - [ ] Gameover modal and fancy cutscenes.

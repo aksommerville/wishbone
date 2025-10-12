@@ -19,6 +19,9 @@ int egg_client_init() {
   egg_rom_get(g.rom,g.romc);
   if (res_load()<0) return -1;
   
+  if (!(g.font=font_new())) return -1;
+  if (font_add_image(g.font,RID_image_font_0020,0x0020)<0) return -1;
+  
   srand_auto();
   
   //TODO Start with modal_type_hello, and have it do these before dismissing:

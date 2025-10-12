@@ -90,9 +90,11 @@ static struct hero_event *hero_get_event(struct sprite *sprite,int dp) {
 
 /* Cause an injury.
  * No sound effect, since different hazards might sound different.
+ * Public.
  */
  
-static void hero_injure(struct sprite *sprite) {
+void sprite_hero_injure(struct sprite *sprite) {
+  if (!sprite||(sprite->type!=&sprite_type_hero)) return;
   if (SPRITE->damageclock>0.0) return; // Temporarily invincible while reporting the previous damage.
   g.hp--;
   if (g.hp<=0) {
@@ -131,7 +133,10 @@ static int hero_check_lockpick(struct sprite *sprite) {
           if (cmd.arg[0]!=x) continue;
           if (cmd.arg[1]!=y) continue;
           if (flag_get(cmd.arg[2])) continue;
-          fprintf(stderr,"TODO Pick lock at %d,%d for flag %d\n",x,y,cmd.arg[2]);
+          struct modal *modal=modal_spawn(&modal_type_lockpick);
+          if (modal) {
+            modal_lockpick_setup(modal,cmd.arg[2],cmd.arg[3]);
+          }
           return 1;
         }
     }
@@ -210,7 +215,7 @@ static int hero_return_to_earth(struct sprite *sprite) {
     SFX(splash)
     sprite->x=SPRITE->vaultx;
     sprite->y=SPRITE->vaulty;
-    hero_injure(sprite);
+    sprite_hero_injure(sprite);
     return 0;
   }
   

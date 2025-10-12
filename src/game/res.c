@@ -134,3 +134,23 @@ int res_get(void *dstpp,int tid,int rid) {
   *(const void**)dstpp=res->v;
   return res->c;
 }
+
+/* Get string.
+ */
+ 
+int res_get_string(void *dstpp,int rid,int strix) {
+  if (strix<0) return 0;
+  if ((rid<1)||(rid>=0x40)) return 0;
+  const void *src;
+  int srcc=res_get(&src,EGG_TID_strings,(egg_prefs_get(EGG_PREF_LANG)<<6)|rid);
+  struct strings_reader reader;
+  if (strings_reader_init(&reader,src,srcc)<0) return 0;
+  struct strings_entry string;
+  while (strings_reader_next(&string,&reader)>0) {
+    if (string.index<strix) continue;
+    if (string.index>strix) return 0;
+    *(const void**)dstpp=string.v;
+    return string.c;
+  }
+  return 0;
+}

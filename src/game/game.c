@@ -63,7 +63,14 @@ int load_map(int mapid) {
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
 
-      case CMD_map_lock:
+      case CMD_map_lock: {
+          int x=cmd.arg[0];
+          int y=cmd.arg[1];
+          if ((x<NS_sys_mapw)&&(y<NS_sys_maph)) {
+            if (flag_get(cmd.arg[2])) map->v[y*NS_sys_mapw+x]++;
+          }
+        } break;
+        
       case CMD_map_switchable:
       case CMD_map_stompbox: {
           int x=cmd.arg[0];
@@ -123,7 +130,6 @@ static void recheck_poi(int flagid,int v) {
 
       // Stompboxes change when something else actuates the same flag. A little weird but we have to.
       // Treadles do not.
-      case CMD_map_lock:
       case CMD_map_switchable:
       case CMD_map_stompbox: {
           if (cmd.arg[2]!=flagid) break;
@@ -132,6 +138,17 @@ static void recheck_poi(int flagid,int v) {
           if ((x<NS_sys_mapw)&&(y<NS_sys_maph)) {
             int p=y*NS_sys_mapw+x;
             if (flag_get(cmd.arg[2])!=cmd.arg[3]) g.map->v[p]=g.map->kv[p]+1;
+            else g.map->v[p]=g.map->kv[p];
+            g.map_dirty=1;
+          }
+        } break;
+      case CMD_map_lock: {
+          if (cmd.arg[2]!=flagid) break;
+          int x=cmd.arg[0];
+          int y=cmd.arg[1];
+          if ((x<NS_sys_mapw)&&(y<NS_sys_maph)) {
+            int p=y*NS_sys_mapw+x;
+            if (flag_get(cmd.arg[2])) g.map->v[p]=g.map->kv[p]+1;
             else g.map->v[p]=g.map->kv[p];
             g.map_dirty=1;
           }
