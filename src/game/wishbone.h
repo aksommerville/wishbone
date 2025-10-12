@@ -74,6 +74,7 @@ int res_get(void *dstpp,int tid,int rid);
 struct map *res_get_map(int rid);
 int res_get_string(void *dstpp,int rid,int strix);
 
+int game_reset();
 int load_map(int mapid);
 
 int flag_get(int flagid);

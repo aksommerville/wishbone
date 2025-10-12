@@ -45,16 +45,20 @@ Or maybe just keep the educators static, that's less to think about.
 - - [x] slingshot
 - - [x] lockpick
 - [x] POI-only treadles and stompboxes.
-- [ ] Hero death.
+- [ ] It's hard to perform SWING, and I keep hitting VAULT instead.
+- [x] Hero death.
+- [ ] Boomerang: Collect treasures and hurt foes.
 - [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
 - [ ] Sound effects.
 - [ ] Hello modal.
 - [ ] Gameover modal and fancy cutscenes.
 - [ ] Dialogue.
-- [ ] Combat.
+- [x] Combat.
+- [ ] Consequences for killing a foe: Prize, stats, flags.
 - [ ] Proper maps.
 - [ ] Splash effect. (eg vault or slingshot into the sea)
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
+- [ ] Lots can be prettied up, if there's time.
 
 ## Notes
 

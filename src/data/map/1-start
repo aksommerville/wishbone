@@ -16,3 +16,6 @@ sprite @9,4 sprite:hero (u32)0
 sprite @12,6 sprite:wishbone (u8:flag)wishbone (u8:prize)none (u16)0
 sprite @4,6 sprite:heart (u8:flag)zero (u8:prize)heart (u16)0
 lock @6,2 (u8:flag)lock1 0xff
+sprite @6,7 sprite:redbug (u32)0
+sprite @15,8 sprite:redbug (u32)0
+sprite @2,2 sprite:redbug (u32)0

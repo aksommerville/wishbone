@@ -37,6 +37,14 @@ struct sprite_type {
   void (*flag)(struct sprite *sprite,int flagid,int v);
   
   void (*bump)(struct sprite *sprite,struct sprite *bumper);
+  
+  /* Get whacked by the hero. (whacker) should be the same as (g.hero) but trust (whacker) if different.
+   * (nx,ny) is a unit vector describing the direction of the hit. For a stab, it's always cardinal.
+   * Return nonzero to acknowledge, or zero if we should pretend nothing happened.
+   * In general you should not produce a sound effect, that's the whacker's problem.
+   * But do it anyway if it's something weird like an explosion.
+   */
+  int (*whack)(struct sprite *sprite,struct sprite *whacker,double nx,double ny);
 };
 
 /* Only the sprite stack itself should call del or new.
@@ -61,7 +69,13 @@ int sprite_move(struct sprite *sprite,double dx,double dy);
 int sprite_test_position(const struct sprite *sprite); // 0=collide, 1=ok
 
 void sprite_hero_input(struct sprite *sprite,int input,int pvinput);
-void sprite_hero_injure(struct sprite *sprite);
+
+/* Cause the hero to lose one heart. May start proceedings for Game Over.
+ * (assailant) may be null, otherwise it's the sprite dealing the damage.
+ * Our policy is that hazards should call this on their own. Dot generally won't hurt herself.
+ * Dot does manage hazards with no sprite attached, eg drowning.
+ */
+void sprite_hero_injure(struct sprite *sprite,struct sprite *assailant);
 
 int sprite_boomerang_exists();
 

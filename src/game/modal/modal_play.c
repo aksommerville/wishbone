@@ -5,6 +5,9 @@
 #define TRANSITION_TIME_FRAMES 30
 #define DISPHP_TIME_FRAMES 60
 
+#define END_TIME 2.000
+#define END_FADE_TIME 1.000
+
 static void play_render_bgbits(struct modal *modal);
 static void play_render_transbits(struct modal *modal);
 
@@ -17,6 +20,7 @@ struct modal_play {
   int tohp;
   int disphp; // Normally matches (g.hp) but can mismatch while animating the change.
   int disphpclock;
+  double endclock; // Positive counting down if the hero is dead; we self-dismiss at zero.
 };
 
 #define MODAL ((struct modal_play*)modal)
@@ -135,6 +139,16 @@ static void _play_update(struct modal *modal,double elapsed,int input,int pvinpu
   if (g.map_dirty) {
     g.map_dirty=0;
     play_render_bgbits(modal);
+  }
+  
+  // Tick end clock, self-dismiss if expired, and set end clock if there's no hero.
+  if (MODAL->endclock>0.0) {
+    if ((MODAL->endclock-=elapsed)<=0.0) {
+      modal->defunct=1;
+      modal_spawn(&modal_type_gameover);
+    }
+  } else if (!g.hero) {
+    MODAL->endclock=END_TIME;
   }
 }
 
@@ -291,6 +305,14 @@ static void _play_render(struct modal *modal) {
   }
   
   play_render_status_bar(modal,0,0,FBW,statush);
+  
+  if ((MODAL->endclock>0.0)&&(MODAL->endclock<END_FADE_TIME)) {
+    int alpha=(int)(((END_FADE_TIME-MODAL->endclock)*255.0)/END_FADE_TIME);
+    if (alpha>0) {
+      if (alpha>0xff) alpha=0xff;
+      graf_fill_rect(&g.graf,0,0,FBW,FBH,0x00000000|alpha);
+    }
+  }
 }
 
 /* Render bgbits.

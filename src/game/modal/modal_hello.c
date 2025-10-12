@@ -23,6 +23,9 @@ static int _hello_init(struct modal *modal) {
  */
  
 static void _hello_focus(struct modal *modal,int focus) {
+  if (focus) {
+    egg_play_song(RID_song_behind_each_tapestry,0,1);
+  }
 }
 
 /* Update.
@@ -30,7 +33,12 @@ static void _hello_focus(struct modal *modal,int focus) {
  
 static void _hello_update(struct modal *modal,double elapsed,int input,int pvinput) {
   if (input!=pvinput) {
-    if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) modal->defunct=1;
+    if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
+      modal->defunct=1;
+      if (game_reset()>=0) {
+        modal_spawn(&modal_type_play);
+      }
+    }
   }
 }
 
@@ -39,6 +47,8 @@ static void _hello_update(struct modal *modal,double elapsed,int input,int pvinp
  
 static void _hello_render(struct modal *modal) {
   graf_fill_rect(&g.graf,0,0,FBW,FBH,0x008000ff);
+  graf_set_image(&g.graf,RID_image_outdoors);
+  graf_tile(&g.graf,FBW>>1,FBH>>1,0x0f,0); // "oh eff": The TODO tile
 }
 
 /* Type definition.

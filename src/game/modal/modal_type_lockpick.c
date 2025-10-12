@@ -459,10 +459,9 @@ static void _lockpick_update(struct modal *modal,double elapsed,int input,int pv
   // Tick the deathclock if running.
   if (MODAL->deathclock>0.0) {
     if ((MODAL->deathclock-=elapsed)<=0.0) {
-      fprintf(stderr,"TODO: Engage lock's defensive measures.\n");//TODO
       modal->defunct=1;
       SFX(lockpick_defense)
-      sprite_hero_injure(g.hero);
+      sprite_hero_injure(g.hero,0);
     }
   }
 }

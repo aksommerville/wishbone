@@ -50,11 +50,15 @@
 #define NS_sprtype_hero       1 /* (u32)0 */
 #define NS_sprtype_treasure   2 /* (u8:flag)zero (u8:prize)none (u8)0 (u8)0 */
 #define NS_sprtype_boomerang  3 /* (u24)0 0x02 */
+#define NS_sprtype_bug        4 /* (u32)0 */
+#define NS_sprtype_soulballs  5 /* (u24)0 (u8)count */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
   _(treasure) \
-  _(boomerang)
+  _(boomerang) \
+  _(bug) \
+  _(soulballs)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1

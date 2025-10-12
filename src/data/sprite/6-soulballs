@@ -1,0 +1,3 @@
+image image:sprites
+tile 0x53 0
+type (u16:sprtype)soulballs

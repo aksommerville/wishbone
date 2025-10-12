@@ -10,13 +10,16 @@
 #define SWING_MINIMUM_TIME 0.250
 #define HERO_EVENT_LIMIT 16
 #define SPELL_LIMIT 16
-#define DAMAGE_TIME 0.500
+#define DAMAGE_TIME 0.250
 #define SLINGSHOT_ANGVEL 3.000 /* radian/sec */
 #define SLINGSHOT_MAG_ADJUST_RATE 40.0 /* pixel/sec */
 #define SLINGSHOT_MAG_MAX 30.0
 #define SLINGSHOT_VEL_MAX 20.0
 #define SLINGSHOT_VEL_MIN 10.0
 #define SLINGSHOT_FLIGHT_TIME 0.333
+#define PUSHBACK_TIME 0.200
+#define PUSHBACK_SPEED 15.0
+#define PUSHBACK_WALK_SPEED_LIMIT 3.0 /* While pushback in progress, walking still happens, but at a lower speed. */
 
 #define ACTION_STATE_NONE 0
 #define ACTION_STATE_STAB 1
@@ -46,12 +49,17 @@ struct sprite_hero {
   int vaultdx,vaultdy;
   double vaultx,vaulty; // Return here if we drown.
   int stabdir,swingdir; // btnid (dpad only, singles)
+  int stabbed; // Nonzero during STAB and SWING states if we hit something -- Do not trigger WAND in this case.
   int spell[SPELL_LIMIT]; // btnid (dpad only, singles) or zero
   int spellp;
   double rejectclock; // WAND
   double damageclock;
   double slingt; // radians
   double slingm; // visual displacement in pixels, and related to output force
+  
+  // Pushback. (pbdx,pbdy) are a unit vector. (pbclock) counts down.
+  double pbdx,pbdy;
+  double pbclock;
 };
 
 static struct hero_event empty_event={0};
@@ -88,23 +96,46 @@ static struct hero_event *hero_get_event(struct sprite *sprite,int dp) {
   return SPRITE->eventv+p;
 }
 
+/* Begin pushback.
+ */
+ 
+static void hero_set_pushback(struct sprite *sprite,double x,double y) {
+  double dx=sprite->x-x;
+  double dy=sprite->y-y;
+  double d2=dx*dx+dy*dy;
+  if (d2<0.001) return; // Reference point too near, forget it.
+  double d=sqrt(d2);
+  double nx=dx/d;
+  double ny=dy/d;
+  SPRITE->pbdx=nx;
+  SPRITE->pbdy=ny;
+  SPRITE->pbclock=PUSHBACK_TIME;
+}
+
 /* Cause an injury.
  * No sound effect, since different hazards might sound different.
  * Public.
  */
  
-void sprite_hero_injure(struct sprite *sprite) {
+void sprite_hero_injure(struct sprite *sprite,struct sprite *assailant) {
   if (!sprite||(sprite->type!=&sprite_type_hero)) return;
   if (SPRITE->damageclock>0.0) return; // Temporarily invincible while reporting the previous damage.
   g.hp--;
+  
+  // Does it kill me?
   if (g.hp<=0) {
     g.hp=0;
     sprite->defunct=1;
-    //TODO Soulballs.
-    //TODO Set a global timer or something, to force reset.
-    return;
+    struct sprite *soulballs=sprite_spawn_res(RID_sprite_soulballs,sprite->x,sprite->y,7);
+    
+  // Just plain damage, still alive.
+  } else {
+    SPRITE->damageclock=DAMAGE_TIME;
+    if (assailant) {
+      SFX(injure)
+      hero_set_pushback(sprite,assailant->x,assailant->y);
+    }
   }
-  SPRITE->damageclock=DAMAGE_TIME;
 }
 
 /* If current context permits a lockpick operation, start it and return nonzero.
@@ -170,6 +201,8 @@ static int hero_check_boomerang(struct sprite *sprite) {
  */
  
 static int hero_check_wand(struct sprite *sprite) {
+  // No wand if we just whacked something. Don't penalize Dot for practicing good follow-thru on a swing.
+  if (SPRITE->stabbed) return 0;
   // Must be no intervening events (even inert-feeling stuff like releasing the dpad).
   const struct hero_event *event=hero_get_event(sprite,-1);
   if ((event->press!=EGG_BTN_SOUTH)||event->release) return 0;
@@ -215,7 +248,7 @@ static int hero_return_to_earth(struct sprite *sprite) {
     SFX(splash)
     sprite->x=SPRITE->vaultx;
     sprite->y=SPRITE->vaulty;
-    sprite_hero_injure(sprite);
+    sprite_hero_injure(sprite,0);
     return 0;
   }
   
@@ -417,6 +450,87 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
   }
 }
 
+/* Trigger effects for SWING or STAB.
+ * Caller sets (stabdir,swingdir) and (action_state).
+ * We set (stabbed).
+ * We make the sound effect and poke other sprites as warranted.
+ */
+ 
+static void hero_bat(struct sprite *sprite) {
+  SPRITE->stabbed=0;
+  
+  /* Effective area is a square meter, half of which is covered by us.
+   * Actually it's slightly further out than half. Ensure that we DO hit things exactly one meter away.
+   * Same effective area for SWING and STAB.
+   */
+  const double radius=0.500;
+  const double offset=1.000;
+  double hitl=sprite->x-radius;
+  double hitr=sprite->x+radius;
+  double hitt=sprite->y-radius;
+  double hitb=sprite->y+radius;
+  double nx=0.0,ny=0.0;
+  switch (SPRITE->stabdir) {
+    case EGG_BTN_LEFT:  hitl-=offset; hitr-=offset; nx=-1.0; break;
+    case EGG_BTN_RIGHT: hitl+=offset; hitr+=offset; nx= 1.0; break;
+    case EGG_BTN_UP:    hitt-=offset; hitb-=offset; ny=-1.0; break;
+    case EGG_BTN_DOWN:  hitt+=offset; hitb+=offset; ny= 1.0; break;
+    default: return;
+  }
+  
+  /* If SWING, find the point from which normals will be computed.
+   * (STAB, it's the same cardinal normal for everybody).
+   * Start from my center, follow the cardinal normal, then we just need to know which corner for the off-axis.
+   */
+  double refx=sprite->x+nx*0.5;
+  double refy=sprite->y+ny*0.5;
+  switch (SPRITE->swingdir) {
+    case EGG_BTN_LEFT:  refx-=0.5; break;
+    case EGG_BTN_RIGHT: refx+=0.5; break;
+    case EGG_BTN_UP:    refy-=0.5; break;
+    case EGG_BTN_DOWN:  refy+=0.5; break;
+  }
+  
+  /* Find the impacted sprites.
+   */
+  int hurtc=0;
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) {
+    struct sprite *other=*p;
+    if (other->defunct) continue;
+    if (!other->type->whack) continue;
+    if (other->x<hitl) continue;
+    if (other->x>hitr) continue;
+    if (other->y<hitt) continue;
+    if (other->y>hitb) continue;
+    if (SPRITE->swingdir) { // Compute the normal per victim.
+      double dx=other->x-refx;
+      double dy=other->y-refy;
+      if ((dx<-0.001)||(dx>0.001)||(dy<-0.001)||(dy>0.001)) { // If coincident to the reference, just keep what we have.
+        double distance=sqrt(dx*dx+dy*dy);
+        nx=dx/distance;
+        ny=dy/distance;
+      }
+    }
+    if (other->type->whack(other,sprite,nx,ny)) {
+      hurtc++;
+    }
+  }
+  
+  /* Sound effect.
+   * One sound per swing, even if multiple things happened.
+   */
+  if (hurtc) {
+    SFX(hurt_foe)
+    SPRITE->stabbed=1;
+  } else if (SPRITE->swingdir) {
+    SFX(swing)
+  } else {
+    SFX(stab)
+  }
+}
+
 /* Check SWING, begin if warranted and return nonzero.
  */
  
@@ -432,6 +546,8 @@ static int is_single_dpad(int input) {
 }
  
 static int hero_check_swing(struct sprite *sprite) {
+  //TODO I still don't like this trigger. Too hard to hit, and it conflicts annoyingly with VAULT.
+  //TODO ooh ooh! How about you start as STAB, then tap the off-axis within 250ms or so after stabbing?
   // Most recent pressed must be [axisA,axisB,south], within some minimum interval. Intervening releases are ok.
   int dp=-1,got_swing=0,axisb=0,axisa=0;
   double starttime;
@@ -458,11 +574,9 @@ static int hero_check_swing(struct sprite *sprite) {
   double duration=SPRITE->dumbclock-starttime;
   if (duration>SWING_MINIMUM_TIME) return 0;
   // OK, we're doing it.
-  fprintf(stderr,"SWING from 0x%04x to 0x%04x\n",axisa,axisb);
-  SFX(swing)
   SPRITE->stabdir=axisb;
   SPRITE->swingdir=axisa;
-  //TODO Whack things.
+  hero_bat(sprite);
   SPRITE->action_state=ACTION_STATE_SWING;
   SPRITE->actionclock=0.0;
   return 1;
@@ -472,15 +586,14 @@ static int hero_check_swing(struct sprite *sprite) {
  */
  
 static void hero_begin_stab(struct sprite *sprite) {
-  fprintf(stderr,"STAB facedir=0x%02x\n",SPRITE->facedir);
+  SPRITE->swingdir=0;
   switch (SPRITE->facedir) {
     case 0x40: SPRITE->stabdir=EGG_BTN_UP; break;
     case 0x10: SPRITE->stabdir=EGG_BTN_LEFT; break;
     case 0x08: SPRITE->stabdir=EGG_BTN_RIGHT; break;
     default: SPRITE->stabdir=EGG_BTN_DOWN; break;
   }
-  SFX(stab)
-  //TODO Whack things.
+  hero_bat(sprite);
   SPRITE->action_state=ACTION_STATE_STAB;
 }
 
@@ -557,14 +670,16 @@ static void hero_update_walk(struct sprite *sprite,double elapsed) {
 
   if (action_state_prevents_walking(SPRITE->action_state)) return;
 
+  double speed=WALK_SPEED;
+  if (SPRITE->pbclock>0.0) speed=PUSHBACK_WALK_SPEED_LIMIT;
   int walkdx=0,walkdy=0,xok=0,yok=0;
   switch (SPRITE->input&(EGG_BTN_LEFT|EGG_BTN_RIGHT)) {
-    case EGG_BTN_LEFT: walkdx=-1; xok=sprite_move(sprite,-WALK_SPEED*elapsed,0.0); break;
-    case EGG_BTN_RIGHT: walkdx=1; xok=sprite_move(sprite,WALK_SPEED*elapsed,0.0); break;
+    case EGG_BTN_LEFT: walkdx=-1; xok=sprite_move(sprite,-speed*elapsed,0.0); break;
+    case EGG_BTN_RIGHT: walkdx=1; xok=sprite_move(sprite,speed*elapsed,0.0); break;
   }
   switch (SPRITE->input&(EGG_BTN_UP|EGG_BTN_DOWN)) {
-    case EGG_BTN_UP: walkdy=-1; yok=sprite_move(sprite,0.0,-WALK_SPEED*elapsed); break;
-    case EGG_BTN_DOWN: walkdy=1; yok=sprite_move(sprite,0.0,WALK_SPEED*elapsed); break;
+    case EGG_BTN_UP: walkdy=-1; yok=sprite_move(sprite,0.0,-speed*elapsed); break;
+    case EGG_BTN_DOWN: walkdy=1; yok=sprite_move(sprite,0.0,speed*elapsed); break;
   }
   
   // If movement was rejected and was on just one axis, cheat the other axis toward a half-meter interval.
@@ -646,6 +761,11 @@ static void _hero_update(struct sprite *sprite,double elapsed) {
   SPRITE->dumbclock+=elapsed;
   if (SPRITE->damageclock>0.0) {
     SPRITE->damageclock-=elapsed;
+  }
+  if (SPRITE->pbclock>0.0) {
+    SPRITE->pbclock-=elapsed;
+    sprite_move(sprite,SPRITE->pbdx*PUSHBACK_SPEED*elapsed,0.0);
+    sprite_move(sprite,0.0,SPRITE->pbdy*PUSHBACK_SPEED*elapsed);
   }
   if (g.item==NS_flag_wishbone) {
     hero_update_wishbone(sprite,elapsed);

@@ -1,5 +1,25 @@
 #include "wishbone.h"
 
+/* Reset entirely.
+ */
+ 
+int game_reset() {
+  // Let load_map() delete the sprites. It will, and if we clear (g.hero) it will delete hero sprites too.
+  g.hero=0;
+  g.map=0;
+  g.map_dirty=1;
+  g.qposc=0;
+  g.forgottenc=0;
+  g.maxhp=5;
+  g.hp=5;
+  g.item=0;//NS_flag_wishbone;
+  memset(g.flags,0,sizeof(g.flags));
+  g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
+  egg_play_song(RID_song_into_the_dirt,0,1);
+  if (load_map(RID_map_start)<0) return -1;
+  return 0;
+}
+
 /* Replace (g.physics).
  */
  
