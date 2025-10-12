@@ -52,13 +52,17 @@
 #define NS_sprtype_boomerang  3 /* (u24)0 0x02 */
 #define NS_sprtype_bug        4 /* (u32)0 */
 #define NS_sprtype_soulballs  5 /* (u24)0 (u8)count */
+#define NS_sprtype_firepot    6 /* sprite:fireball (u8:flag)one (u8)0 */
+#define NS_sprtype_missile    7 /* (u32)0 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
   _(treasure) \
   _(boomerang) \
   _(bug) \
-  _(soulballs)
+  _(soulballs) \
+  _(firepot) \
+  _(missile)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1

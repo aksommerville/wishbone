@@ -1,0 +1,4 @@
+type (u16:sprtype)missile
+image image:sprites
+tile 91 0
+layer (u16)110

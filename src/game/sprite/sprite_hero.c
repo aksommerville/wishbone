@@ -135,6 +135,13 @@ void sprite_hero_injure(struct sprite *sprite,struct sprite *assailant) {
       SFX(injure)
       hero_set_pushback(sprite,assailant->x,assailant->y);
     }
+    
+    // Some states need to drop on injury.
+    if (SPRITE->action_state==ACTION_STATE_WAND) {
+      SPRITE->action_state=0;
+    } else if (SPRITE->action_state==ACTION_STATE_SLINGSHOT) {
+      SPRITE->action_state=0;
+    }
   }
 }
 

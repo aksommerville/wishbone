@@ -12,3 +12,5 @@
 
 image image:outdoors
 neighbors 0x0000 map:start 0x0000 0x0000
+sprite @5,6 sprite:firepot sprite:fireball (u8:flag)lock1 (u8)0
+sprite @8,1 sprite:firepot sprite:fireball (u8:flag)one (u8)0
