@@ -44,6 +44,10 @@
 #define NS_spell_fire 3
 //TODO dream up some more spells, 5..10 is probly good
 
+#define NS_npcaction_none 0
+#define NS_npcaction_wishbone 1
+#define NS_npcaction_heal 2
+
 // Editor uses the comment after a 'sprtype' symbol as a prompt in the new-sprite modal.
 // Should match everything after 'spriteid' in the CMD_map_sprite args.
 #define NS_sprtype_dummy      0 /* (u32)0 */
@@ -54,6 +58,7 @@
 #define NS_sprtype_soulballs  5 /* (u24)0 (u8)count */
 #define NS_sprtype_firepot    6 /* sprite:fireball (u8:flag)one (u8)0 */
 #define NS_sprtype_missile    7 /* (u32)0 */
+#define NS_sprtype_npc        8 /* (u8)strix (u8:npcaction)none (u16)0 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
@@ -62,13 +67,15 @@
   _(bug) \
   _(soulballs) \
   _(firepot) \
-  _(missile)
+  _(missile) \
+  _(npc)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1
 #define NS_flag_wishbone 2
 #define NS_flag_lock1 3
 #define NS_flag_lock2 4
-#define NS_FLAG_COUNT 5
+#define NS_flag_castle_exit 5
+#define NS_FLAG_COUNT 6
 
 #endif

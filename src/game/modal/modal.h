@@ -46,5 +46,6 @@ extern const struct modal_type modal_type_gameover;
 extern const struct modal_type modal_type_hello;
 
 int modal_lockpick_setup(struct modal *modal,int flagid,int difficulty);
+struct modal *modal_dialogue_begin(int rid,int strix);
 
 #endif
