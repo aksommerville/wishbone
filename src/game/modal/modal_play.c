@@ -159,9 +159,9 @@ static void _play_update(struct modal *modal,double elapsed,int input,int pvinpu
   if (g.rainclock>0.0) {
     g.rainclock-=elapsed;
     if ((g.rainsoundclock-=elapsed)<=0.0) {
-      g.rainsoundclock+=0.333;
+      g.rainsoundclock+=0.100;
       double trim=0.5+((rand()&0x7fff)/32768.0);
-      double pan=((rand()&0x7fff)/65536.0)-1.0;
+      double pan=((rand()&0x7fff)/16384.0)-1.0;
       egg_play_sound(RID_sound_raindrop,trim,pan);
     }
   }

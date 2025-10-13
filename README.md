@@ -51,16 +51,18 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Heart containers.
 - [x] Educators.
 - [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
-- [ ] Sound effects.
+- [x] Sound effects.
 - [x] Hello modal.
 - [ ] Gameover modal and fancy cutscenes.
 - [x] Dialogue.
 - [x] Combat.
 - [ ] Consequences for killing a foe: Prize, stats, flags.
+- [ ] More monsters.
 - [ ] Proper maps.
 - [ ] Indicate the teleport spell, where you start.
 - [ ] Splash effect. (eg vault or slingshot into the sea)
 - [ ] Lockpick: Unmistakable warning flash at say 5 seconds? It's easy to miss the countdown.
+- [ ] Still missing a lot of sounds, and the existing ones could stand some review.
 - [ ] Can we detect soft-locking when you're on an island without a wishbone?
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.

@@ -1023,6 +1023,11 @@ void sprite_hero_input(struct sprite *sprite,int input,int pvinput) {
   event->release=pvinput&~input;
   event->time=SPRITE->dumbclock;
   
+  // Press SOUTH but don't have the wishbone? Play a sound so they know they've found the right button.
+  if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)&&!g.item) {
+    SFX(reject)
+  }
+  
   // When a dpad button goes ON, facedir changes immediately.
   if (event->press&EGG_BTN_LEFT) SPRITE->facedir=0x10;
   if (event->press&EGG_BTN_RIGHT) SPRITE->facedir=0x08;
