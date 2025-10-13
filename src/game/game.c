@@ -10,9 +10,8 @@ int game_reset() {
   g.map_dirty=1;
   g.qposc=0;
   g.forgottenc=0;
-  g.maxhp=5;
-  g.hp=5;
-  g.item=0;//NS_flag_wishbone;
+  g.hp=g.maxhp=3; // 3 hearts is a hallowed tradition.
+  g.item=0;
   memset(g.flags,0,sizeof(g.flags));
   g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
   egg_play_song(RID_song_into_the_dirt,0,1);
@@ -110,6 +109,7 @@ int load_map(int mapid) {
           uint32_t arg=(cmd.arg[4]<<24)|(cmd.arg[5]<<16)|(cmd.arg[6]<<8)|cmd.arg[7];
           if ((spriteid==RID_sprite_hero)&&hero) {
             // We already have a hero; don't create a new one.
+            fprintf(stderr,"declining to spawn hero\n");
           } else {
             sprite_spawn_res(spriteid,x,y,arg);
           }
@@ -126,7 +126,7 @@ int load_map(int mapid) {
     int i=g.forgottenc;
     for (;i-->0;f++) {
       if (f->mapid!=g.map->rid) continue;
-      struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,f->x+0.5,f->y+0.5,(f->flagid<<24)|(f->forgottenid<<8));
+      struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,f->x+0.5,f->y+0.5,(f->prizeid<<16)|(f->forgottenid<<8));
     }
   }
   
@@ -283,14 +283,14 @@ void qpos_release(int x,int y) {
 /* Forgotten things.
  */
  
-int forgotten_add(int mapid,int x,int y,int flagid) {
+int forgotten_add(int mapid,int x,int y,int prizeid) {
   if (g.forgottenc>=FORGOTTEN_LIMIT) return -1;
   if (g.forgottenid_next<1) g.forgottenid_next=1;
   struct forgotten *f=g.forgottenv+g.forgottenc++;
   f->mapid=mapid;
   f->x=x;
   f->y=y;
-  f->flagid=flagid;
+  f->prizeid=prizeid;
   f->forgottenid=g.forgottenid_next++;
   return f->forgottenid;
 }

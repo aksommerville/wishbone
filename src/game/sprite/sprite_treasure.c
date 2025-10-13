@@ -22,8 +22,7 @@ static int _treasure_init(struct sprite *sprite) {
   SPRITE->flagid=sprite->arg>>24;
   SPRITE->prizeid=sprite->arg>>16;
   SPRITE->forgottenid=sprite->arg>>8;
-  // Can't do this, because we create multiple wishbone sprites, when you lose one due to slingshotting.
-  //if (flag_get(SPRITE->flagid)) return -1;
+  if (flag_get(SPRITE->flagid)) return -1;
   
   struct cmdlist_reader reader;
   if (sprite_reader_init(&reader,sprite->res,sprite->resc)>=0) {
@@ -40,22 +39,13 @@ static int _treasure_init(struct sprite *sprite) {
 
 static void treasure_get_got(struct sprite *sprite) {
   if (SPRITE->forgottenid) forgotten_remove(SPRITE->forgottenid);
-  if (SPRITE->flagid) {
-    if (g.item) return; // Assuming that all flag treasures are items. Might not be the case eventually.
-    g.item=SPRITE->flagid;
-    SFX(treasure)
-    sprite->defunct=1;
-    flag_set(SPRITE->flagid,1);
-    //TODO Fireworks?
-  } else if (SPRITE->prizeid) {
-    SFX(prize)
-    sprite->defunct=1;
-    //TODO Fireworks?
-    switch (SPRITE->prizeid) {
-      case NS_prize_heart: if (++(g.hp)>=g.maxhp) g.hp=g.maxhp; break;
-    }
-  } else {
-    sprite->defunct=1;
+  SFX(prize)
+  sprite->defunct=1;
+  flag_set(SPRITE->flagid,1);
+  switch (SPRITE->prizeid) {
+    case NS_prize_heart: if (++(g.hp)>=g.maxhp) g.hp=g.maxhp; break;
+    case NS_prize_container: g.maxhp++; g.hp++; break;
+    case NS_prize_wishbone: g.item=NS_flag_wishbone; flag_set(NS_flag_wishbone,1); break;
   }
 }
 

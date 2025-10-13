@@ -53,6 +53,14 @@ static void _npc_bump(struct sprite *sprite,struct sprite *bumper) {
         }
       } break;
       
+    case NS_npcaction_sensei: {
+        if (g.item==NS_flag_wishbone) {
+          modal_dialogue_begin(1,SPRITE->strix);
+        } else {
+          modal_dialogue_begin(1,21);
+        }
+      } break;
+      
     default: {
         if (SPRITE->strix) {
           modal_dialogue_begin(1,SPRITE->strix);

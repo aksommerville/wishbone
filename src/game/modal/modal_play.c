@@ -117,6 +117,20 @@ static void play_nav(struct modal *modal,int dx,int dy) {
  */
  
 static void play_check_transitions(struct modal *modal) {
+  if (g.teleport) {
+    g.teleport=0;
+    play_render_transbits(modal);
+    g.hero=0; // Let the map loader spawn a new one.
+    if (load_map(RID_map_start)<0) {
+      fprintf(stderr,"map:start failed to load during teleport\n");
+      egg_terminate(1);
+    }
+    play_render_bgbits(modal);
+    play_find_key_sprites(modal); // Find the new hero. (important that this be set before we proceed)
+    MODAL->transclock=TRANSITION_TIME_FRAMES;
+    MODAL->transdx=MODAL->transdy=0; // Fade to black and back.
+    return;
+  }
   if (g.hero) {
          if (g.hero->x<0.0) play_nav(modal,-1,0);
     else if (g.hero->y<0.0) play_nav(modal,0,-1);
@@ -139,6 +153,17 @@ static void _play_update(struct modal *modal,double elapsed,int input,int pvinpu
   if (g.map_dirty) {
     g.map_dirty=0;
     play_render_bgbits(modal);
+  }
+  
+  // Update the weather.
+  if (g.rainclock>0.0) {
+    g.rainclock-=elapsed;
+    if ((g.rainsoundclock-=elapsed)<=0.0) {
+      g.rainsoundclock+=0.333;
+      double trim=0.5+((rand()&0x7fff)/32768.0);
+      double pan=((rand()&0x7fff)/65536.0)-1.0;
+      egg_play_sound(RID_sound_raindrop,trim,pan);
+    }
   }
   
   // Tick end clock, self-dismiss if expired, and set end clock if there's no hero.
@@ -302,6 +327,17 @@ static void _play_render(struct modal *modal) {
     graf_set_input(&g.graf,MODAL->bgbits);
     graf_decal(&g.graf,0,statush,0,0,worldw,worldh);
     play_render_sprites(modal,0,statush);
+  }
+  
+  if (g.rainclock>0.0) {
+    // I'm not crazy about this, it's kind of blinky, but it's better than creating a bunch of state for each raindrop.
+    graf_set_input(&g.graf,0);
+    int i=100; while (i-->0) {
+      int x=rand()%FBW;
+      int ay=rand()%FBH;
+      int by=ay-(10+rand()%40);
+      graf_line(&g.graf,x,ay,0x0000c080,x,by,0x0000c000);
+    }
   }
   
   play_render_status_bar(modal,0,0,FBW,statush);

@@ -403,9 +403,9 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
   if (SPRITE->actionclock>0.0) {
     if ((SPRITE->actionclock-=elapsed)<=0.0) {
       if (hero_return_to_earth(sprite)) {
-        int forgottenid=forgotten_add(g.map->rid,(int)SPRITE->vaultx,(int)SPRITE->vaulty,NS_flag_wishbone);
+        int forgottenid=forgotten_add(g.map->rid,(int)SPRITE->vaultx,(int)SPRITE->vaulty,NS_prize_wishbone);
         if (forgottenid>0) {
-          struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,SPRITE->vaultx,SPRITE->vaulty,(NS_flag_wishbone<<24)|(forgottenid<<8));
+          struct sprite *treasure=sprite_spawn_res(RID_sprite_wishbone,SPRITE->vaultx,SPRITE->vaulty,(NS_prize_wishbone<<16)|(forgottenid<<8));
           g.item=0;
           flag_set(NS_flag_wishbone,0);
         }

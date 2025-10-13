@@ -68,7 +68,7 @@ static int dialogue_build_texture(struct modal *modal) {
   egg_texture_del(MODAL->texid);
   const char *text=0;
   int textc=res_get_string(&text,MODAL->rid,MODAL->strix);
-  MODAL->texid=font_render_to_texture(0,g.font,text,textc,FBW-10,FBH-10,0xffffffff);
+  MODAL->texid=font_render_to_texture(0,g.font,text,textc,FBW>>1,FBH-10,0xffffffff);
   egg_texture_get_size(&MODAL->w,&MODAL->h,MODAL->texid);
   MODAL->x=(FBW>>1)-(MODAL->w>>1);
   MODAL->y=FBH-MODAL->h-10;

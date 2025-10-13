@@ -39,5 +39,18 @@ int spell_repr(char *dst,int dsta,int spellid) {
  */
  
 void spell_cast(int spellid) {
-  fprintf(stderr,"TODO %s %d [%s:%d]\n",__func__,spellid,__FILE__,__LINE__);//TODO
+  switch (spellid) {
+  
+    // We're triggered during a sprite update, so it would not be fitting to reload the map right now.
+    // Would in fact be devastating.
+    case NS_spell_teleport: g.teleport=1; break;
+      
+    case NS_spell_rain: {
+        g.rainclock=4.0;
+      } break;
+      
+    case NS_spell_fire: {
+        fprintf(stderr,"TODO %s fire\n",__func__);
+      } break;
+  }
 }

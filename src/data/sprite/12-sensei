@@ -1,0 +1,4 @@
+type (u16:sprtype)npc
+image image:sprites
+tile 100 0
+phymask (b32:physics)solid

@@ -61,11 +61,14 @@ extern struct g {
   struct forgotten { // A thing left behind, typically a wishbone.
     int mapid;
     int x,y;
-    int flagid;
+    int prizeid;
     int forgottenid;
   } forgottenv[FORGOTTEN_LIMIT];
   int forgottenc;
   int forgottenid_next;
+  double rainclock; // Counts down; raining while nonzero.
+  double rainsoundclock;
+  int teleport; // Set to perform teleport next convenient moment. modal_play consumes it.
 } g;
 
 int res_load();
@@ -91,7 +94,7 @@ int spell_eval(const char *src,int srcc);
 int spell_repr(char *dst,int dsta,int spellid);
 void spell_cast(int spellid);
 
-int forgotten_add(int mapid,int x,int y,int flagid);
+int forgotten_add(int mapid,int x,int y,int prizeid);
 void forgotten_remove(int forgottenid);
 
 #endif
