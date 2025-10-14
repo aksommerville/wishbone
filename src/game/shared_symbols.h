@@ -35,6 +35,7 @@
 #define NS_physics_vacant 0
 #define NS_physics_solid 1
 #define NS_physics_water 2
+#define NS_physics_nospawn 3
 
 #define NS_prize_none      0
 #define NS_prize_heart     1
@@ -89,6 +90,12 @@
 #define NS_flag_container3 9
 #define NS_flag_training_bridge 10
 #define NS_flag_backdoorbugs 11
-#define NS_FLAG_COUNT 12
+#define NS_flag_spawn1 12
+#define NS_flag_spawn2 13
+#define NS_flag_castle_door1 14
+#define NS_flag_antechamber_bugs 15
+#define NS_flag_bosslock 16
+#define NS_flag_spawn3 17
+#define NS_FLAG_COUNT 18
 
 #endif

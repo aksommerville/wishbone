@@ -27,7 +27,23 @@ static inline int bug_likes_cell(int x,int y) {
   if ((x<0)||(y<0)||(x>=NS_sys_mapw)||(y>=NS_sys_maph)) return 0;
   uint8_t tileid=g.map->v[y*NS_sys_mapw+x];
   uint8_t physics=g.physics[tileid];
-  return (physics==NS_physics_vacant);
+  if (physics!=NS_physics_vacant) return 0;
+  
+  double l=x+0.125,r=x+0.875;
+  double t=y+0.125,b=y+0.874;
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) {
+    struct sprite *other=*p;
+    if (other->type==&sprite_type_hero) continue; // It's good and proper to walk into her.
+    if (other->defunct) continue;
+    if (other->x<l) continue;
+    if (other->x>r) continue;
+    if (other->y<t) continue;
+    if (other->y>b) continue;
+    return 0;
+  }
+  return 1;
 }
 
 // Set a nonzero waitclock, and choose a new target.
