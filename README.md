@@ -59,10 +59,11 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Consequences for killing a foe: Prize, stats, flags.
 - [ ] More monsters.
 - [ ] Proper maps.
-- [ ] Indicate the teleport spell, where you start.
-- [ ] Splash effect. (eg vault or slingshot into the sea)
+- [x] Indicate the teleport spell, where you start.
+- [x] Splash effect. (eg vault or slingshot into the sea)
 - [ ] Lockpick: Unmistakable warning flash at say 5 seconds? It's easy to miss the countdown.
 - [ ] Still missing a lot of sounds, and the existing ones could stand some review.
+- - Stompbox, begin dialogue, spell stroke, teleport.
 - [ ] Can we detect soft-locking when you're on an island without a wishbone?
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.

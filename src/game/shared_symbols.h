@@ -17,13 +17,14 @@
 #define CMD_map_lock       0x43 /* u16:position u8:flagid u8:difficulty */
 #define CMD_map_neighbors  0x60 /* u16:west, u16:east, u16:north, u16:south */
 #define CMD_map_sprite     0x61 /* u16:position, u16:spriteid, u32:arg */
-#define CMD_map_door       0x62 /* u16:position, u16:mapid, u16:dstposition, u16:arg */
+#define CMD_map_spawn      0x62 /* u16:spriteid, u8:count, u8:flagid, u32:arg */
 
 #define CMD_sprite_animate   0x01 /* ; treasure */
 #define CMD_sprite_image     0x20 /* u16:imageid */
 #define CMD_sprite_tile      0x21 /* u8:tileid, u8:xform */
 #define CMD_sprite_type      0x22 /* u16:sprtype */
 #define CMD_sprite_layer     0x23 /* u16:layer */
+#define CMD_sprite_animonce  0x24 /* u8:tilecount, u8:periodms */
 #define CMD_sprite_phymask   0x40 /* b32:physics */
 
 #define NS_tilesheet_physics 1
@@ -44,7 +45,6 @@
 #define NS_spell_teleport 1
 #define NS_spell_rain 2
 #define NS_spell_fire 3
-//TODO dream up some more spells, 5..10 is probly good
 
 #define NS_npcaction_none 0
 #define NS_npcaction_wishbone 1
@@ -63,6 +63,7 @@
 #define NS_sprtype_missile    7 /* (u32)0 */
 #define NS_sprtype_npc        8 /* (u8)strix (u8:npcaction)none (u16)0 */
 #define NS_sprtype_bonfire    9 /* (u32)0 */
+#define NS_sprtype_animonce  10 /* (u32)0 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
@@ -73,7 +74,8 @@
   _(firepot) \
   _(missile) \
   _(npc) \
-  _(bonfire)
+  _(bonfire) \
+  _(animonce)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1
@@ -86,6 +88,7 @@
 #define NS_flag_container2 8
 #define NS_flag_container3 9
 #define NS_flag_training_bridge 10
-#define NS_FLAG_COUNT 11
+#define NS_flag_backdoorbugs 11
+#define NS_FLAG_COUNT 12
 
 #endif

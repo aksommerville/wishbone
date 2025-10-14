@@ -14,5 +14,6 @@ image image:outdoors
 neighbors map:start 0x0000 map:9 map:7
 stompbox @17,2 (u8:flag)castle_exit 0
 switchable @15,4 (u8:flag)castle_exit 0
-sprite @9,4 sprite:redbug (u32)0
-sprite @5,2 sprite:redbug (u32)0
+#sprite @9,4 sprite:redbug (u32)0
+#sprite @5,2 sprite:redbug (u32)0
+spawn sprite:redbug 2 (u8:flag)backdoorbugs (u32)0

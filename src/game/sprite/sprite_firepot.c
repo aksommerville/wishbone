@@ -66,10 +66,17 @@ static void _firepot_flag(struct sprite *sprite,int flagid,int v) {
   }
 }
 
+static void _firepot_spell(struct sprite *sprite,int spellid) {
+  if (spellid==NS_spell_rain) {
+    SPRITE->enable=0;
+  }
+}
+
 const struct sprite_type sprite_type_firepot={
   .name="firepot",
   .objlen=sizeof(struct sprite_firepot),
   .init=_firepot_init,
   .update=_firepot_update,
   .flag=_firepot_flag,
+  .spell=_firepot_spell,
 };

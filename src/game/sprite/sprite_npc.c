@@ -38,6 +38,7 @@ static void _npc_bump(struct sprite *sprite,struct sprite *bumper) {
         if (flag_get(NS_flag_wishbone)) {
           modal_dialogue_begin(1,7); // Come back if you need to.
         } else {
+          SFX(treasure)
           flag_set(NS_flag_wishbone,1);
           g.item=NS_flag_wishbone;
           modal_dialogue_begin(1,6); // Take this.
@@ -48,6 +49,7 @@ static void _npc_bump(struct sprite *sprite,struct sprite *bumper) {
         if (g.hp>=g.maxhp) {
           modal_dialogue_begin(1,9); // Come back if you need to.
         } else {
+          SFX(prize)
           g.hp=g.maxhp;
           modal_dialogue_begin(1,8); // You're healed!
         }

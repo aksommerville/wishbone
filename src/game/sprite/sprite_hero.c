@@ -251,8 +251,8 @@ static int hero_return_to_earth(struct sprite *sprite) {
   // If it's water, we're doomed.
   if (physics==NS_physics_water) {
    _splash_:;
-    //TODO splash sprite
     SFX(splash)
+    struct sprite *splash=sprite_spawn_res(RID_sprite_splash,sprite->x,sprite->y,0);
     sprite->x=SPRITE->vaultx;
     sprite->y=SPRITE->vaulty;
     sprite_hero_injure(sprite,0);
@@ -531,6 +531,7 @@ static void hero_bat(struct sprite *sprite) {
   if (hurtc) {
     SFX(hurt_foe)
     SPRITE->stabbed=1;
+    if (g.has_spawn) check_dead_spawn();
   } else if (SPRITE->swingdir) {
     SFX(swing)
   } else {
@@ -906,7 +907,8 @@ static void hero_render_inner(struct sprite *sprite,int dstx,int dsty) {
     else if (SPRITE->vaultdx>0) { tileid+=2; xform+=EGG_XFORM_XREV; }
     else if (SPRITE->vaultdy<0) tileid+=1;
     if (SPRITE->actionclock<VAULT_TIME*0.5) tileid+=0x10;
-    graf_tile(&g.graf,dstx,dsty-1,tileid,xform);
+    graf_tile(&g.graf,dstx,dsty+1,0x0d,0);
+    graf_tile(&g.graf,dstx,dsty-3,tileid,xform);
     return;
   }
   

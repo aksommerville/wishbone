@@ -36,6 +36,9 @@ struct sprite_type {
   // You don't subscribe to flags individually, but a sprite can receive *all* flag changes.
   void (*flag)(struct sprite *sprite,int flagid,int v);
   
+  // Similar to (flag), you can be notified of every spell or none.
+  void (*spell)(struct sprite *sprite,int spellid);
+  
   void (*bump)(struct sprite *sprite,struct sprite *bumper);
   
   /* Get whacked by the hero. (whacker) should be the same as (g.hero) but trust (whacker) if different.

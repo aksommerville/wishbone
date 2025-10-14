@@ -112,6 +112,7 @@ static void _boomerang_update(struct sprite *sprite,double elapsed) {
         if (other->type->whack(other,sprite,nx,ny)) {
           SFX(hurt_foe)
           SPRITE->return_clock=0.0;
+          if (g.has_spawn) check_dead_spawn();
           break;
         }
       }

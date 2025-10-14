@@ -35,6 +35,61 @@ static void load_physics(int tilesheetid) {
   }
 }
 
+/* Is any sprite near this cell?
+ */
+ 
+static int sprite_near_cell(int col,int row) {
+  double l=col+0.250;
+  double r=col+0.750;
+  double t=row+0.250;
+  double b=row+0.750;
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) {
+    struct sprite *sprite=*p;
+    if (sprite->x<l) continue;
+    if (sprite->x>r) continue;
+    if (sprite->y<t) continue;
+    if (sprite->y>b) continue;
+    return 1;
+  }
+  return 0;
+}
+
+/* Select a position for a randomly-spawning monster.
+ * Returns nonzero if we picked something valid, zero to cancel.
+ */
+ 
+static int choose_spawn_point(double *x,double *y) {
+  const int margin=2; // Don't spawn near the edges.
+  const int x0=margin,y0=margin,w=NS_sys_mapw-(margin<<1),h=NS_sys_maph-(margin<<1);
+  
+  /* We're going to do something smarter than the obvious drunk-stab.
+   * Catalogue all the valid cells, being mindful of sprites in addition to the map.
+   * Then select randomly from that set.
+   */
+  uint16_t candidatev[NS_sys_mapw*NS_sys_maph]; // (y<<8)|x
+  int candidatec=0;
+  const uint8_t *rowstart=g.map->v+y0*NS_sys_mapw+x0;
+  int row=y0,yi=h;
+  for (;yi-->0;row++,rowstart+=NS_sys_mapw) {
+    const uint8_t *p=rowstart;
+    int col=x0,xi=w;
+    for (;xi-->0;col++,p++) {
+      if (!g.physics[*p]) {
+        if (!sprite_near_cell(col,row)) {
+          candidatev[candidatec++]=(row<<8)|col;
+        }
+      }
+    }
+  }
+  if (candidatec<1) return 0;
+  int candidatep=rand()%candidatec;
+  *x=(candidatev[candidatep]&0xff)+0.5;
+  *y=(candidatev[candidatep]>>8)+0.5;
+  return 1;
+}
+
 /* Load map.
  */
  
@@ -70,6 +125,7 @@ int load_map(int mapid) {
     load_physics(map->imageid);
   }
   
+  g.has_spawn=0;
   g.map_dirty=0; // I guess technically it is dirty, but modal_play already knows it's changing.
   g.map=map;
   if (hero) sprite_relist(hero);
@@ -109,13 +165,25 @@ int load_map(int mapid) {
           uint32_t arg=(cmd.arg[4]<<24)|(cmd.arg[5]<<16)|(cmd.arg[6]<<8)|cmd.arg[7];
           if ((spriteid==RID_sprite_hero)&&hero) {
             // We already have a hero; don't create a new one.
-            fprintf(stderr,"declining to spawn hero\n");
           } else {
             sprite_spawn_res(spriteid,x,y,arg);
           }
         } break;
         
-      case CMD_map_door: break;//TODO? u16:position, u16:mapid, u16:dstposition, u16:arg
+      case CMD_map_spawn: {
+          uint8_t flagid=cmd.arg[3];
+          if (!flagid||!flag_get(flagid)) {
+            int spriteid=(cmd.arg[0]<<8)|cmd.arg[1];
+            uint32_t arg=(cmd.arg[4]<<24)|(cmd.arg[5]<<16)|(cmd.arg[6]<<8)|cmd.arg[7];
+            int c=cmd.arg[2];
+            while (c-->0) {
+              double x,y;
+              if (!choose_spawn_point(&x,&y)) break;
+              sprite_spawn_res(spriteid,x,y,arg);
+              if (flagid) g.has_spawn=1;
+            }
+          }
+        } break;
       
     }
   }
@@ -303,5 +371,39 @@ void forgotten_remove(int forgottenid) {
     g.forgottenc--;
     memmove(f,f+1,sizeof(struct forgotten)*(g.forgottenc-i));
     return;
+  }
+}
+
+/* Is there a sprite of the given rid?
+ */
+ 
+static int spriteid_in_play(int spriteid) {
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) {
+    struct sprite *sprite=*p;
+    if (sprite->defunct) continue; // Very important to check this. We typically get called when the monster in question is defunct but not yet removed.
+    if (sprite->spriteid==spriteid) return 1;
+  }
+  return 0;
+}
+
+/* If all spawned sprites are dead, set the appropriate flag.
+ * Anyone killing a monster should call this after, if (g.has_spawn).
+ */
+ 
+void check_dead_spawn() {
+  struct cmdlist_reader reader;
+  if (cmdlist_reader_init(&reader,g.map->cmd,g.map->cmdc)<0) return;
+  struct cmdlist_entry cmd;
+  while (cmdlist_reader_next(&cmd,&reader)>0) {
+    if (cmd.opcode==CMD_map_spawn) {
+      uint8_t flagid=cmd.arg[3];
+      if (!flagid||flag_get(flagid)) continue;
+      int spriteid=(cmd.arg[0]<<8)|cmd.arg[1];
+      if (!spriteid_in_play(spriteid)) {
+        flag_set(flagid,1);
+      }
+    }
   }
 }

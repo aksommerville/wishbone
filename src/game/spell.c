@@ -46,11 +46,20 @@ void spell_cast(int spellid) {
     case NS_spell_teleport: g.teleport=1; break;
       
     case NS_spell_rain: {
-        g.rainclock=4.0;
+        g.rainclock=2.5;
       } break;
       
     case NS_spell_fire: {
         fprintf(stderr,"TODO %s fire\n",__func__);
       } break;
+  }
+  // Notify sprites.
+  struct sprite **p=g.spritev;
+  int i=g.spritec;
+  for (;i-->0;p++) {
+    struct sprite *sprite=*p;
+    if (sprite->defunct) continue;
+    if (!sprite->type->spell) continue;
+    sprite->type->spell(sprite,spellid);
   }
 }

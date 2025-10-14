@@ -69,6 +69,7 @@ extern struct g {
   double rainclock; // Counts down; raining while nonzero.
   double rainsoundclock;
   int teleport; // Set to perform teleport next convenient moment. modal_play consumes it.
+  int has_spawn; // Nonzero if we created at least one sprite from a flagged spawn point. Check for completion at every kill.
 } g;
 
 int res_load();
@@ -79,6 +80,7 @@ int res_get_string(void *dstpp,int rid,int strix);
 
 int game_reset();
 int load_map(int mapid);
+void check_dead_spawn();
 
 int flag_get(int flagid);
 int flag_set(int flagid,int v); // => nonzero if changed

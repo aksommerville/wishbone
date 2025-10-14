@@ -1,0 +1,5 @@
+type (u16:sprtype)animonce
+image image:sprites
+tile 103 0
+animonce 9 60
+layer (u16)50
