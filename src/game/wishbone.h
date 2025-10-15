@@ -70,6 +70,11 @@ extern struct g {
   double rainsoundclock;
   int teleport; // Set to perform teleport next convenient moment. modal_play consumes it.
   int has_spawn; // Nonzero if we created at least one sprite from a flagged spawn point. Check for completion at every kill.
+  double playtime;
+  
+  char saved_game[256];
+  int saved_gamec;
+  int saved_game_dirty;
 } g;
 
 int res_load();
@@ -79,6 +84,8 @@ struct map *res_get_map(int rid);
 int res_get_string(void *dstpp,int rid,int strix);
 
 int game_reset();
+int game_load(const char *src,int srcc);
+int game_encode(char *dst,int dsta); // Upper bound 162, but that's probably not reachable. 10..30 is more realistic.
 int load_map(int mapid);
 void check_dead_spawn();
 

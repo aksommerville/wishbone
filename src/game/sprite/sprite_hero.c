@@ -124,9 +124,11 @@ void sprite_hero_injure(struct sprite *sprite,struct sprite *assailant) {
   
   // Does it kill me?
   if (g.hp<=0) {
+    SFX(injure)
     g.hp=0;
     sprite->defunct=1;
     struct sprite *soulballs=sprite_spawn_res(RID_sprite_soulballs,sprite->x,sprite->y,7);
+    g.saved_game_dirty=1;
     
   // Just plain damage, still alive.
   } else {

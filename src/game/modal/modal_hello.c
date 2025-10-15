@@ -63,7 +63,7 @@ static int _hello_init(struct modal *modal) {
   if (label=hello_add_label(modal,STRIX_FOR_JAM,0x208060ff)) { label->y=y; y+=12; label->x=10; }
   
   y=80;
-  if (label=hello_add_label(modal,STRIX_CONTINUE,0xffffffff)) { label->y=y; y+=12; } // TODO disable if not available
+  if (label=hello_add_label(modal,STRIX_CONTINUE,0xffffffff)) { label->y=y; y+=12; label->enable=(g.saved_gamec>0); }
   if (label=hello_add_label(modal,STRIX_NEW_GAME,0xffffffff)) { label->y=y; y+=12; label->enable=1; }
   if (label=hello_add_label(modal,STRIX_QUIT,0xffffffff)) { label->y=y; y+=12; label->enable=1; }
   
@@ -88,10 +88,15 @@ static void hello_activate(struct modal *modal) {
   if ((MODAL->labelp<0)||(MODAL->labelp>=MODAL->labelc)) return;
   switch (MODAL->labelv[MODAL->labelp].strix) {
     case STRIX_CONTINUE: {
-        //TODO continue
+        modal->defunct=1;
+        // This is safe, even if the saved game is empty or malformed:
+        if (game_load(g.saved_game,g.saved_gamec)>=0) {
+          modal_spawn(&modal_type_play);
+        }
       } break;
     case STRIX_NEW_GAME: {
         modal->defunct=1;
+        g.saved_gamec=0;
         if (game_reset()>=0) {
           modal_spawn(&modal_type_play);
         }
@@ -134,8 +139,11 @@ static void _hello_render(struct modal *modal) {
   int i=0;
   for (;i<MODAL->labelc;i++,label++) {
     if (i==MODAL->labelp) graf_fill_rect(&g.graf,label->x-2,label->y-2,label->w+4,label->h+3,0x000000ff);
+    int gray_out=(label->strix==STRIX_CONTINUE)&&!label->enable;
+    if (gray_out) graf_set_alpha(&g.graf,0x40);
     graf_set_input(&g.graf,label->texid);
     graf_decal(&g.graf,label->x,label->y,0,0,label->w,label->h);
+    if (gray_out) graf_set_alpha(&g.graf,0xff);
   }
 }
 

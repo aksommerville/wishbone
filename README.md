@@ -59,7 +59,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
 - [ ] More monsters.
 - [ ] Boss fight.
-- [ ] Save game.
+- [x] Save game.
 - [x] Pole vault: One more lil tweak: Allow the second dpad stroke to release before A, optionally.
 - [x] Try requiring a double-tap on the dpad for polevault; I'm still hitting it by accident in combat.
 - [x] Proper maps.

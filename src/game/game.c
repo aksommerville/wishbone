@@ -14,9 +14,176 @@ int game_reset() {
   g.item=0;
   memset(g.flags,0,sizeof(g.flags));
   g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
+  g.playtime=0.0;
   egg_play_song(RID_song_into_the_dirt,0,1);
   if (load_map(RID_map_start)<0) return -1;
   return 0;
+}
+
+/* Load individual fields of saved game.
+ * On any error, these functions will ensure a sane global state.
+ * (and on successes too, obviously).
+ */
+ 
+static int decuint_eval(int *dst,const char *src,int srcc) {
+  if (srcc<1) return -1;
+  *dst=0;
+  for (;srcc-->0;src++) {
+    int digit=(*src)-'0';
+    if ((digit<0)||(digit>9)) { *dst=0; return -1; }
+    if (*dst>INT_MAX/10) { *dst=0; return -1; }
+    (*dst)*=10;
+    if (*dst>INT_MAX-digit) { *dst=0; return -1; }
+    (*dst)+=digit;
+  }
+  return 0;
+}
+ 
+static int game_load_hp(const char *src,int srcc) {
+  if (decuint_eval(&g.hp,src,srcc)<0) { g.hp=g.maxhp; return -1; }
+  if ((g.hp<3)||(g.hp>10)) { g.hp=g.maxhp; return -1; }
+  g.maxhp=g.hp;
+  return 0;
+}
+
+static int game_load_flags(const char *src,int srcc) {
+  int dstp=0,shift=4,srcp=0;
+  for (;srcp<srcc;srcp++) {
+    int digit;
+         if ((src[srcp]>='0')&&(src[srcp]<='9')) digit=src[srcp]-'0';
+    else if ((src[srcp]>='a')&&(src[srcp]<='f')) digit=src[srcp]-'a'+10;
+    else if ((src[srcp]>='A')&&(src[srcp]<='F')) digit=src[srcp]-'A'+10;
+    else return -1;
+    if (dstp<sizeof(g.flags)) {
+      g.flags[dstp]|=digit<<shift;
+    }
+    if (shift) shift=0;
+    else { shift=4; dstp++; }
+  }
+  g.flags[0]=(g.flags[0]&~3)|2; // Ensure (zero,one) are (0,1), not allowed to be otherwise.
+  return 0;
+}
+
+static int game_load_forgotten(const char *src,int srcc) {
+  int srcp=0,tokenc;
+  const char *token;
+  while (srcp<srcc) {
+    #define NEXTTOKEN { \
+      token=src+srcp; \
+      tokenc=0; \
+      while ((srcp<srcc)&&(src[srcp++]!=',')) tokenc++; \
+    }
+    int mapid,x,y,prizeid;
+    NEXTTOKEN if (decuint_eval(&mapid,token,tokenc)<0) return -1;
+    NEXTTOKEN if (decuint_eval(&x,token,tokenc)<0) return -1;
+    NEXTTOKEN if (decuint_eval(&y,token,tokenc)<0) return -1;
+    NEXTTOKEN if (decuint_eval(&prizeid,token,tokenc)<0) return -1;
+    #undef NEXTTOKEN
+    if (g.forgottenc<FORGOTTEN_LIMIT) { // Drop them if we're full. (but keep going, for validation purposes)
+      struct forgotten *f=g.forgottenv+g.forgottenc++;
+      f->mapid=mapid;
+      f->x=x;
+      f->y=y;
+      f->prizeid=prizeid;
+      f->forgottenid=g.forgottenc;
+    }
+  }
+  return 0;
+}
+
+static int game_load_playtime(const char *src,int srcc) {
+  int ms=0;
+  if (decuint_eval(&ms,src,srcc)<0) return -1;
+  g.playtime=(double)ms/1000.0;
+  return 0;
+}
+
+/* Reset game from saved state.
+ * Saved game is a semicolon-delimited string: HP ; FLAGS ; FORGOTTEN ; PLAYTIME
+ *  - HP is a decimal integer (3..6).
+ *  - FLAGS is a hex dump.
+ *  - FORGOTTEN is comma-delimited decimal integers: MAPID,X,Y,PRIZEID,...
+ *  - PLAYTIME is a decimal integer, milliseconds.
+ * Whitespace is not permitted anywhere.
+ * No errors if input malformed, we just start the game from scratch then.
+ */
+ 
+int game_load(const char *src,int srcc) {
+
+  // Start with a regular reset. And if the saved game is empty, that's all.
+  if (game_reset()<0) return -1;
+  if (!src||(srcc<1)) return 0;
+  
+  /* Each field decoder will leave its own purview sane, pass or fail.
+   * If one step fails, just stop right there.
+   * So you might end up with a partial load in error cases, but never an invalid state.
+   */
+  int srcp=0,tokenc;
+  const char *token;
+  #define NEXTTOKEN { \
+    token=src+srcp; \
+    tokenc=0; \
+    while ((srcp<srcc)&&(src[srcp++]!=';')) tokenc++; \
+  }
+  NEXTTOKEN if (game_load_hp(token,tokenc)<0) return 0;
+  NEXTTOKEN if (game_load_flags(token,tokenc)<0) return 0;
+  NEXTTOKEN if (game_load_forgotten(token,tokenc)<0) return 0;
+  NEXTTOKEN if (game_load_playtime(token,tokenc)<0) return 0;
+  #undef NEXTTOKEN
+  
+  // And some odd cleanup...
+  if (flag_get(NS_flag_wishbone)) g.item=NS_flag_wishbone;
+  
+  return 0;
+}
+
+/* Save game, text only.
+ */
+ 
+static int decuint_repr(char *dst,int dsta,int v) {
+  if (v<0) v=0;
+  int limit=10,dstc=1;
+  while (v>=limit) { dstc++; if (limit>INT_MAX/10) break; limit*=10; }
+  if (dstc<=dsta) {
+    int i=dstc;
+    for (;i-->0;v/=10) dst[i]='0'+v%10;
+  }
+  return dstc;
+}
+ 
+int game_encode(char *dst,int dsta) {
+  int dstc=0;
+  
+  dstc+=decuint_repr(dst+dstc,dsta-dstc,g.maxhp);
+  if (dstc<dsta) dst[dstc]=';'; dstc++;
+  
+  int i=sizeof(g.flags);
+  const uint8_t *src=g.flags;
+  for (;i-->0;src++) {
+    if (dstc<dsta) dst[dstc]="0123456789abcdef"[(*src)>>4]; dstc++;
+    if (dstc<dsta) dst[dstc]="0123456789abcdef"[(*src)&15]; dstc++;
+  }
+  if (dstc<dsta) dst[dstc]=';'; dstc++;
+  
+  const struct forgotten *f=g.forgottenv;
+  for (i=g.forgottenc;i-->0;f++) {
+    dstc+=decuint_repr(dst+dstc,dsta-dstc,f->mapid);
+    if (dstc<dsta) dst[dstc]=','; dstc++;
+    dstc+=decuint_repr(dst+dstc,dsta-dstc,f->x);
+    if (dstc<dsta) dst[dstc]=','; dstc++;
+    dstc+=decuint_repr(dst+dstc,dsta-dstc,f->y);
+    if (dstc<dsta) dst[dstc]=','; dstc++;
+    dstc+=decuint_repr(dst+dstc,dsta-dstc,f->prizeid);
+    if (dstc<dsta) dst[dstc]=','; dstc++;
+  }
+  if ((dstc<=dsta)&&(dst[dstc-1]==',')) dstc--;
+  if (dstc<dsta) dst[dstc]=';'; dstc++;
+  
+  int ms=(int)(g.playtime*1000.0);
+  if (ms<0) ms=0;
+  dstc+=decuint_repr(dst+dstc,dsta-dstc,ms);
+  
+  return dstc;
 }
 
 /* Replace (g.physics).
@@ -275,6 +442,7 @@ int flag_set(int flagid,int v) {
   }
   
   recheck_poi(flagid,v?1:0);
+  g.saved_game_dirty=1;
   return 1;
 }
 
@@ -360,6 +528,7 @@ int forgotten_add(int mapid,int x,int y,int prizeid) {
   f->y=y;
   f->prizeid=prizeid;
   f->forgottenid=g.forgottenid_next++;
+  g.saved_game_dirty=1;
   return f->forgottenid;
 }
 
@@ -370,6 +539,7 @@ void forgotten_remove(int forgottenid) {
     if (f->forgottenid!=forgottenid) continue;
     g.forgottenc--;
     memmove(f,f+1,sizeof(struct forgotten)*(g.forgottenc-i));
+    g.saved_game_dirty=1;
     return;
   }
 }

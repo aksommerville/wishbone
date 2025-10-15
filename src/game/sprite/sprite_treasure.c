@@ -51,7 +51,7 @@ static void treasure_get_got(struct sprite *sprite) {
   flag_set(SPRITE->flagid,1);
   switch (SPRITE->prizeid) {
     case NS_prize_heart: if (++(g.hp)>=g.maxhp) g.hp=g.maxhp; break;
-    case NS_prize_container: g.maxhp++; g.hp++; break;
+    case NS_prize_container: g.maxhp++; g.hp++; g.saved_game_dirty=1; break;
     case NS_prize_wishbone: g.item=NS_flag_wishbone; flag_set(NS_flag_wishbone,1); break;
   }
 }

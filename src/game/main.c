@@ -24,9 +24,10 @@ int egg_client_init() {
   
   srand_auto();
   
-  //TODO Start with modal_type_hello, and have it do these before dismissing:
-  //if (game_reset()<0) return -1;
-  //if (!modal_spawn(&modal_type_play)) return -1;
+  g.saved_gamec=egg_store_get(g.saved_game,sizeof(g.saved_game),"save",4);
+  if ((g.saved_gamec<0)||(g.saved_gamec>sizeof(g.saved_game))) g.saved_gamec=0;
+  g.saved_game_dirty=0;
+  
   if (!modal_spawn(&modal_type_hello)) return -1;
 
   return 0;
@@ -76,6 +77,14 @@ void egg_client_update(double elapsed) {
   }
   
   modal_reap_defunct();
+  
+  // Save if it's dirty.
+  if (g.saved_game_dirty) {
+    g.saved_game_dirty=0;
+    g.saved_gamec=game_encode(g.saved_game,sizeof(g.saved_game));
+    if ((g.saved_gamec<0)||(g.saved_gamec>sizeof(g.saved_game))) g.saved_gamec=0;
+    egg_store_set("save",4,g.saved_game,g.saved_gamec);
+  }
 }
 
 /* Render.

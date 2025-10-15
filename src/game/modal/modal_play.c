@@ -144,6 +144,7 @@ static void play_check_transitions(struct modal *modal) {
  */
  
 static void _play_update(struct modal *modal,double elapsed,int input,int pvinput) {
+  g.playtime+=elapsed; // Technically this dirties the save, but we only capture it when something else happens. (otherwise we'd be saving every frame)
   play_find_key_sprites(modal);
   if (g.hero&&(input!=pvinput)) sprite_hero_input(g.hero,input,pvinput);
   play_update_sprites(modal,elapsed);
