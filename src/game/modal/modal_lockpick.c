@@ -16,6 +16,7 @@
 #define FIREWORK_GROWTH 8.0 /* m/s */
 #define FIREWORK_ROTATE 3.0 /* rad/s */
 #define FIREWORK_SUBROTATE 1.0 /* rad/s */
+#define WARNING_TIME 5.0
 
 // Constants for tuning difficulty:
 #define DEATHCLOCK_MIN_DIFFICULTY 0x40 /* No timer below this difficulty. */
@@ -477,6 +478,14 @@ static void _lockpick_render(struct modal *modal) {
   
   { // Background.
     graf_fill_rect(&g.graf,0,0,FBW,FBH,0x6a0b1cff); // The dark red of our lock's tile.
+    if ((MODAL->deathclock>0.0)&&(MODAL->deathclock<WARNING_TIME)) { // Flash background when close to the end. "Hurry up!"
+      double whole,fract;
+      fract=modf(MODAL->deathclock,&whole);
+      if (fract>0.5) {
+        int alpha=(int)((fract-0.5)*256.0);
+        graf_fill_rect(&g.graf,0,0,FBW,FBH,0xffff0000|alpha);
+      }
+    }
     graf_fill_rect(&g.graf,fldx-1,fldy-1,fldw+2,fldh+2,0x000000ff);
   }
   
