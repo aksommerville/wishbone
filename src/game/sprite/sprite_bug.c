@@ -46,10 +46,13 @@ static inline int bug_likes_cell(int x,int y) {
   return 1;
 }
 
-// Set a nonzero waitclock, and choose a new target.
+// Set a nonzero waitclock.
 static void bug_wait(struct sprite *sprite) {
   SPRITE->waitclock=WAIT_TIME_MIN+((rand()&0x7fff)*(WAIT_TIME_MAX-WAIT_TIME_MIN))/32768.0;
-  
+}
+
+// Choose a new target.
+static void bug_choose_target(struct sprite *sprite) {
   int col=(int)sprite->x; if (col<0) col=0; else if (col>=NS_sys_mapw) col=NS_sys_mapw-1;
   int row=(int)sprite->y; if (row<0) row=0; else if (row>=NS_sys_maph) row=NS_sys_maph-1;
   struct candidate {
@@ -81,7 +84,9 @@ static void _bug_update(struct sprite *sprite,double elapsed) {
 
   // If (waitclock) is set, tick it down.
   if (SPRITE->waitclock>0.0) {
-    SPRITE->waitclock-=elapsed;
+    if ((SPRITE->waitclock-=elapsed)<=0.0) {
+      bug_choose_target(sprite);
+    }
     
   // Not waiting? Move.
   } else {
