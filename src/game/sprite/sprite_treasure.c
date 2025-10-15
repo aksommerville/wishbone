@@ -4,6 +4,10 @@
  
 #include "game/wishbone.h"
 
+// TTL only applies to hearts.
+#define TTL 5.0
+#define BLACKOUT_TIME 0.500 /* Brief initial interval when we can't be boomeranged. Otherwise you can kill a monster and fetch its heart in the same stroke. */
+
 struct sprite_treasure {
   struct sprite hdr;
   uint8_t flagid;
@@ -13,6 +17,7 @@ struct sprite_treasure {
   uint8_t tileid0;
   double animclock;
   int animframe;
+  double ttl;
 };
 
 #define SPRITE ((struct sprite_treasure*)sprite)
@@ -22,6 +27,8 @@ static int _treasure_init(struct sprite *sprite) {
   SPRITE->flagid=sprite->arg>>24;
   SPRITE->prizeid=sprite->arg>>16;
   SPRITE->forgottenid=sprite->arg>>8;
+  if (SPRITE->prizeid==NS_prize_heart) SPRITE->ttl=TTL;
+  else SPRITE->ttl=999.0;
   if (flag_get(SPRITE->flagid)) return -1;
   
   struct cmdlist_reader reader;
@@ -69,6 +76,9 @@ static void _treasure_update(struct sprite *sprite,double elapsed) {
       }
     }
   }
+  if ((SPRITE->ttl-=elapsed)<=0.0) {
+    sprite->defunct=1;
+  }
 }
 
 const struct sprite_type sprite_type_treasure={
@@ -77,3 +87,11 @@ const struct sprite_type sprite_type_treasure={
   .init=_treasure_init,
   .update=_treasure_update,
 };
+
+int sprite_treasure_is_pickable(struct sprite *sprite) {
+  if (!sprite||(sprite->type!=&sprite_type_treasure)) return 0;
+  if (SPRITE->ttl>TTL) return 1;
+  if (SPRITE->ttl>TTL-BLACKOUT_TIME) return 0;
+  SPRITE->ttl=999.0;
+  return 1;
+}

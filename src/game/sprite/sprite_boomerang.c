@@ -35,8 +35,8 @@ static int _boomerang_init(struct sprite *sprite) {
   return 0;
 }
 
-static int sprite_is_pumpkin(const struct sprite *pumpkindidate) {
-  if (pumpkindidate->type==&sprite_type_treasure) return 1;
+static int sprite_is_pumpkin(struct sprite *pumpkindidate) {
+  if (pumpkindidate->type==&sprite_type_treasure) return sprite_treasure_is_pickable(pumpkindidate);
   return 0;
 }
 

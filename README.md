@@ -56,8 +56,10 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Gameover modal and fancy cutscenes.
 - [x] Dialogue.
 - [x] Combat.
-- [ ] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
+- [x] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
 - [ ] More monsters.
+- [ ] Boss fight.
+- [x] Try requiring a double-tap on the dpad for polevault; I'm still hitting it by accident in combat.
 - [x] Proper maps.
 - [x] Indicate the teleport spell, where you start.
 - [x] Splash effect. (eg vault or slingshot into the sea)

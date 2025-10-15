@@ -84,4 +84,9 @@ void sprite_hero_injure(struct sprite *sprite,struct sprite *assailant);
 
 int sprite_boomerang_exists();
 
+/* Nonzero if our "no pickup" blackout is complete.
+ * As a side effect, when we return true, we also kick our TTL up so as not to expire during the carry.
+ */
+int sprite_treasure_is_pickable(struct sprite *sprite);
+
 #endif

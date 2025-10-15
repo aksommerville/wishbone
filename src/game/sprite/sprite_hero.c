@@ -281,15 +281,17 @@ static int hero_return_to_earth(struct sprite *sprite) {
  */
  
 static int hero_check_vault(struct sprite *sprite) {
-  // Vault can only be done in cardinal directions, and must be exactly [dpad,south] with a certain maximum interval between.
-  const struct hero_event *dpad=hero_get_event(sprite,-2);
+  // Vault can only be done in cardinal directions, and must be exactly [dpad-on,dpad-off,dpad-on,south] with a certain maximum interval between.
+  const struct hero_event *dpad1=hero_get_event(sprite,-4);
+  const struct hero_event *dpad2=hero_get_event(sprite,-3);
+  const struct hero_event *dpad3=hero_get_event(sprite,-2);
   const struct hero_event *south=hero_get_event(sprite,-1);
   if ((south->press!=EGG_BTN_SOUTH)||south->release) return 0;
-  if (dpad->release) return 0;
-  double duration=south->time-dpad->time;
+  if ((dpad1->press!=dpad2->release)||(dpad2->release!=dpad3->press)) return 0;
+  double duration=south->time-dpad1->time;
   if (duration>VAULT_WARMUP_TIME) return 0;
   int dx=0,dy=0;
-  switch (dpad->press) {
+  switch (dpad1->press) {
     case EGG_BTN_LEFT: dx=-1; break;
     case EGG_BTN_RIGHT: dx=1; break;
     case EGG_BTN_UP: dy=-1; break;

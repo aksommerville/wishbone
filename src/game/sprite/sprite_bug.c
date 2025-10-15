@@ -29,8 +29,8 @@ static inline int bug_likes_cell(int x,int y) {
   uint8_t physics=g.physics[tileid];
   if (physics!=NS_physics_vacant) return 0;
   
-  double l=x+0.125,r=x+0.875;
-  double t=y+0.125,b=y+0.874;
+  double l=x,r=x+1.0;
+  double t=y,b=y+1.0;
   struct sprite **p=g.spritev;
   int i=g.spritec;
   for (;i-->0;p++) {
@@ -128,7 +128,7 @@ static void _bug_update(struct sprite *sprite,double elapsed) {
 static int _bug_whack(struct sprite *sprite,struct sprite *whacker,double nx,double ny) {
   sprite->defunct=1;
   sprite_spawn_res(RID_sprite_soulballs,sprite->x,sprite->y,4);
-  //TODO prizes? stats? flags?
+  sprite_spawn_res(RID_sprite_heart,sprite->x,sprite->y,NS_prize_heart<<16);
   return 1;
 }
 
