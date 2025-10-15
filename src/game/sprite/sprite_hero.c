@@ -281,13 +281,26 @@ static int hero_return_to_earth(struct sprite *sprite) {
  */
  
 static int hero_check_vault(struct sprite *sprite) {
-  // Vault can only be done in cardinal directions, and must be exactly [dpad-on,dpad-off,dpad-on,south] with a certain maximum interval between.
-  const struct hero_event *dpad1=hero_get_event(sprite,-4);
-  const struct hero_event *dpad2=hero_get_event(sprite,-3);
-  const struct hero_event *dpad3=hero_get_event(sprite,-2);
+  /* Vault can only be done in cardinal directions.
+   * Must be [dpad-on,dpad-off,dpad-on,[,dpad-off],south] with a certain maximum interval between.
+   */
   const struct hero_event *south=hero_get_event(sprite,-1);
-  if ((south->press!=EGG_BTN_SOUTH)||south->release) return 0;
+  if (south->press!=EGG_BTN_SOUTH) return 0;
+  const struct hero_event *dpad4=0; // (dpad4) is optional and may coincide with (south).
+  if (south->release&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN)) dpad4=south;
+  int dp=-2;
+  if (!dpad4) {
+    const struct hero_event *event=hero_get_event(sprite,dp);
+    if (!event->press&&(event->release&(EGG_BTN_LEFT|EGG_BTN_RIGHT|EGG_BTN_UP|EGG_BTN_DOWN))) {
+      dpad4=event;
+      dp--;
+    }
+  }
+  const struct hero_event *dpad3=hero_get_event(sprite,dp--);
+  const struct hero_event *dpad2=hero_get_event(sprite,dp--);
+  const struct hero_event *dpad1=hero_get_event(sprite,dp--);
   if ((dpad1->press!=dpad2->release)||(dpad2->release!=dpad3->press)) return 0;
+  if (dpad4&&(dpad4->release!=dpad3->press)) return 0;
   double duration=south->time-dpad1->time;
   if (duration>VAULT_WARMUP_TIME) return 0;
   int dx=0,dy=0;
