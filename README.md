@@ -72,6 +72,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.
 - [ ] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
+- [ ] Enter modal while holding dpad, it sticks on.
 
 ## Notes
 

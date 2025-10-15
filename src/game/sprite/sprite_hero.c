@@ -1012,6 +1012,7 @@ static void _hero_focus(struct sprite *sprite,int focus) {
     SPRITE->input=0;
     SPRITE->animclock=0;
     SPRITE->animframe=0;
+    memset(SPRITE->eventv,0,sizeof(SPRITE->eventv));
   }
 }
 

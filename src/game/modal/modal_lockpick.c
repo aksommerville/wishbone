@@ -415,6 +415,7 @@ static void lockpick_move(struct modal *modal,int dx,int dy) {
  */
  
 static void _lockpick_update(struct modal *modal,double elapsed,int input,int pvinput) {
+  g.playtime+=elapsed;
 
   // If the terminal cooldown has started, only that and fireworks matter.
   // In particular, the deathclock stops after success.

@@ -66,6 +66,7 @@
 #define NS_sprtype_npc        8 /* (u8)strix (u8:npcaction)none (u16)0 */
 #define NS_sprtype_bonfire    9 /* (u32)0 */
 #define NS_sprtype_animonce  10 /* (u32)0 */
+#define NS_sprtype_boss      11 /* (u32)0 */
 #define FOR_EACH_SPRTYPE \
   _(dummy) \
   _(hero) \
@@ -77,7 +78,8 @@
   _(missile) \
   _(npc) \
   _(bonfire) \
-  _(animonce)
+  _(animonce) \
+  _(boss)
 
 #define NS_flag_zero 0
 #define NS_flag_one 1
