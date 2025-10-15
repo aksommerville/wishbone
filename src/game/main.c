@@ -46,6 +46,14 @@ void egg_client_update(double elapsed) {
     g.pvinput=input;
   }
   
+  // If (victory), defunct everything and push a new 'victory' modal.
+  if (g.victory) {
+    g.victory=0;
+    int i=g.modalc;
+    while (i-->0) g.modalv[i]->defunct=1;
+    if (!modal_spawn(&modal_type_victory)) egg_terminate(1);
+  }
+  
   // Determine which modal should receive the update.
   // Flash focus if needed.
   struct modal *nfocus=0;

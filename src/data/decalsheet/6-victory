@@ -1,0 +1,10 @@
+dot_idle 1 1 36 64
+dot_shout 38 1 36 64
+dot_brandish 75 1 51 64
+dot_threaten 127 1 51 64
+dot_break1 179 1 52 64
+dot_break2 232 1 53 64
+wishbone1 293 8 5 10
+wishbone2 299 5 9 13
+dragon 93 79 220 70
+bg 0 162 320 128

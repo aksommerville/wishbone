@@ -62,9 +62,20 @@ static void _missile_update(struct sprite *sprite,double elapsed) {
   }
 }
 
+static void _missile_spell(struct sprite *sprite,int spellid) {
+  switch (spellid) {
+    case NS_spell_rain: {
+        if (SPRITE->tileid0==0x5b) { // fireball, rain should extinguish
+          sprite->defunct=1;
+        }
+      } break;
+  }
+}
+
 const struct sprite_type sprite_type_missile={
   .name="missile",
   .objlen=sizeof(struct sprite_missile),
   .init=_missile_init,
   .update=_missile_update,
+  .spell=_missile_spell,
 };

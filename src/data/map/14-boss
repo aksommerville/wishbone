@@ -12,3 +12,5 @@
 
 image image:castle
 neighbors 0x0000 0x0000 0x0000 map:13
+sprite @10,6 sprite:grandpa (u8)0 (u8:npcaction)victory (u16)0
+sprite @3,6 sprite:hero (u32)0

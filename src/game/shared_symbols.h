@@ -51,6 +51,7 @@
 #define NS_npcaction_wishbone 1
 #define NS_npcaction_heal 2
 #define NS_npcaction_sensei 3 /* Provide a string, but he says a placeholder instead if you don't have the wishbone. */
+#define NS_npcaction_victory 4 /* For testing */
 
 // Editor uses the comment after a 'sprtype' symbol as a prompt in the new-sprite modal.
 // Should match everything after 'spriteid' in the CMD_map_sprite args.
@@ -97,5 +98,17 @@
 #define NS_flag_bosslock 16
 #define NS_flag_spawn3 17
 #define NS_FLAG_COUNT 18
+
+/* Decals in image:victory */
+#define NS_decal_dot_idle 1
+#define NS_decal_dot_shout 2
+#define NS_decal_dot_brandish 3
+#define NS_decal_dot_threaten 4
+#define NS_decal_dot_break1 5
+#define NS_decal_dot_break2 6
+#define NS_decal_wishbone1 7
+#define NS_decal_wishbone2 8
+#define NS_decal_dragon 9
+#define NS_decal_bg 10
 
 #endif

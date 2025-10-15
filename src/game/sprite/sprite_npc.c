@@ -62,6 +62,11 @@ static void _npc_bump(struct sprite *sprite,struct sprite *bumper) {
           modal_dialogue_begin(1,21);
         }
       } break;
+    
+    // This is not how victory will be triggered in real life, I'm just using it during development.
+    case NS_npcaction_victory: {
+        g.victory=1;
+      } break;
       
     default: {
         if (SPRITE->strix) {

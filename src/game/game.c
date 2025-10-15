@@ -15,8 +15,10 @@ int game_reset() {
   memset(g.flags,0,sizeof(g.flags));
   g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
   g.playtime=0.0;
+  g.victory=0;
   egg_play_song(RID_song_into_the_dirt,0,1);
   if (load_map(RID_map_start)<0) return -1;
+  //if (load_map(RID_map_boss)<0) return -1;//XXX while testing end of game
   return 0;
 }
 

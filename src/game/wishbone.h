@@ -71,6 +71,7 @@ extern struct g {
   int teleport; // Set to perform teleport next convenient moment. modal_play consumes it.
   int has_spawn; // Nonzero if we created at least one sprite from a flagged spawn point. Check for completion at every kill.
   double playtime;
+  int victory;
   
   char saved_game[256];
   int saved_gamec;

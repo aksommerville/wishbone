@@ -53,7 +53,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
 - [x] Sound effects.
 - [x] Hello modal.
-- [ ] Gameover modal and fancy cutscenes.
+- [x] Gameover modal and fancy cutscenes.
 - [x] Dialogue.
 - [x] Combat.
 - [x] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
@@ -71,6 +71,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Can we detect soft-locking when you're on an island without a wishbone? ...no need
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.
+- [ ] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
 
 ## Notes
 
