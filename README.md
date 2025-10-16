@@ -66,8 +66,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Indicate the teleport spell, where you start.
 - [x] Splash effect. (eg vault or slingshot into the sea)
 - [x] Lockpick: Unmistakable warning flash at say 5 seconds? It's easy to miss the countdown.
-- [ ] Still missing a lot of sounds, and the existing ones could stand some review.
-- - Stompbox, begin dialogue, spell stroke, teleport, slingshot.
+- [x] Still missing a lot of sounds, and the existing ones could stand some review.
 - [x] Can we detect soft-locking when you're on an island without a wishbone? ...no need
 - [x] Dot faces for slingshot flight. Using the generic idle face now. ...meh generic is fine, one barely sees it.
 - [ ] Lots can be prettied up, if there's time.

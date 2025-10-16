@@ -125,6 +125,7 @@ static void play_nav(struct modal *modal,int dx,int dy) {
  
 static void play_check_transitions(struct modal *modal) {
   if (g.teleport) {
+    SFX(teleport)
     int mapid=g.teleport;
     g.teleport=0;
     play_render_transbits(modal);

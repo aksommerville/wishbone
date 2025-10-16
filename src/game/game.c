@@ -461,7 +461,7 @@ static int qpos_set_flag(int x,int y,int v) {
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
     
-      case CMD_map_treadle: {
+      case CMD_map_treadle: { // XXX we don't actually use treadles anywhere
           if (x!=cmd.arg[0]) break;
           if (y!=cmd.arg[1]) break;
           result++;
@@ -477,7 +477,10 @@ static int qpos_set_flag(int x,int y,int v) {
           if (y!=cmd.arg[1]) break;
           result++;
           if (v==1) { // Stompboxes only change the flag on entry.
+            SFX(treadle_on)
             flag_set(cmd.arg[2],flag_get(cmd.arg[2])?0:1);
+          } else {
+            SFX(treadle_off)
           }
         } break;
     }

@@ -346,6 +346,7 @@ static void hero_update_vault(struct sprite *sprite,double elapsed) {
 static void hero_append_spell(struct sprite *sprite,int btnid) {
   SPRITE->spell[SPRITE->spellp]=btnid;
   if (++(SPRITE->spellp)>=SPELL_LIMIT) SPRITE->spellp=0;
+  SFX(spellbit)
 }
  
 static void hero_update_wand(struct sprite *sprite,double elapsed) {
@@ -446,8 +447,10 @@ static void hero_update_slingshot(struct sprite *sprite,double elapsed) {
     if (event->press&EGG_BTN_SOUTH) {
       if (SPRITE->slingm<=0.0) {
         SPRITE->action_state=0;
+        SFX(exit)
         // Cancelled. Keep your wishbone, do not create a forgotten.
       } else {
+        SFX(slingshot)
         SPRITE->actionclock=SLINGSHOT_FLIGHT_TIME;
         double velocity=SLINGSHOT_VEL_MIN+(SPRITE->slingm*(SLINGSHOT_VEL_MAX-SLINGSHOT_VEL_MIN))/SLINGSHOT_MAG_MAX;
         SPRITE->vaultdx=+cos(-SPRITE->slingt)*velocity;

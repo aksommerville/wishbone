@@ -19,6 +19,7 @@ static void _dialogue_del(struct modal *modal) {
  */
  
 static int _dialogue_init(struct modal *modal) {
+  SFX(dialogue)
   return 0;
 }
 
@@ -34,7 +35,10 @@ static void _dialogue_focus(struct modal *modal,int focus) {
 static void _dialogue_update(struct modal *modal,double elapsed,int input,int pvinput) {
   g.playtime+=elapsed;
   if (input!=pvinput) {
-    if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) modal->defunct=1;
+    if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
+      SFX(exit)
+      modal->defunct=1;
+    }
   }
 }
 
