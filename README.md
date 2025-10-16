@@ -73,7 +73,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Lots can be prettied up, if there's time.
 - [x] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
 - [x] Enter modal while holding dpad, it sticks on.
-- [ ] Hello modal could certainly bear some prettying-up. Maybe some flying toasters in the background?
+- [x] Hello modal could certainly bear some prettying-up. Maybe some flying toasters in the background?
 - [ ] Add a spell to teleport to the boss's antechamber, unlocked only after you kill the monsters there.
 - [ ] We're not quite at ten minutes, I think. Can we pad it out somehow?
 

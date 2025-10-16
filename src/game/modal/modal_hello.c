@@ -135,6 +135,30 @@ static void _hello_update(struct modal *modal,double elapsed,int input,int pvinp
  
 static void _hello_render(struct modal *modal) {
   graf_fill_rect(&g.graf,0,0,FBW,FBH,0x104030ff);
+  
+  /* Draw a bunch of wishbones wallpaper style.
+   */
+  graf_set_image(&g.graf,RID_image_sprites);
+  const int spacing=40;
+  int y0=-(g.framec%spacing);
+  int x0=g.framec%spacing-spacing;
+  graf_set_filter(&g.graf,1);
+  graf_set_alpha(&g.graf,0x40);
+  uint8_t tilesize=12;
+  uint8_t rotation=g.framec%80;
+  if (rotation>40) rotation=80-rotation;
+  rotation-=25;
+  int y=y0;
+  for (;y<FBH+tilesize;y+=spacing) {
+    int x=x0;
+    for (;x<FBW+tilesize;x+=spacing) {
+      graf_fancy(&g.graf,x,y,0x52,0,rotation,tilesize,0,0);
+      graf_fancy(&g.graf,x+(spacing>>1),y+(spacing>>1),0x52,0,rotation,tilesize,0,0);
+    }
+  }
+  graf_set_filter(&g.graf,0);
+  graf_set_alpha(&g.graf,0xff);
+  
   struct label *label=MODAL->labelv;
   int i=0;
   for (;i<MODAL->labelc;i++,label++) {
