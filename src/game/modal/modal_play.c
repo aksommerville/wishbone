@@ -125,11 +125,12 @@ static void play_nav(struct modal *modal,int dx,int dy) {
  
 static void play_check_transitions(struct modal *modal) {
   if (g.teleport) {
+    int mapid=g.teleport;
     g.teleport=0;
     play_render_transbits(modal);
     g.hero=0; // Let the map loader spawn a new one.
-    if (load_map(RID_map_start)<0) {
-      fprintf(stderr,"map:start failed to load during teleport\n");
+    if (load_map(mapid)<0) {
+      fprintf(stderr,"map:%d failed to load during teleport\n",mapid);
       egg_terminate(1);
     }
     play_render_bgbits(modal);

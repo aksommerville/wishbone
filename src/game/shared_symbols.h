@@ -11,6 +11,7 @@
 #define NS_sys_bgcolor 0x000000
 
 #define CMD_map_image      0x20 /* u16:imageid */
+#define CMD_map_song       0x21 /* u16:songid ; not normally used; only for antechamber, in case you back out of the fight. */
 #define CMD_map_switchable 0x40 /* u16:position u8:flagid u8:invert */
 #define CMD_map_treadle    0x41 /* u16:position u8:flagid u8:invert */
 #define CMD_map_stompbox   0x42 /* u16:position u8:flagid u8:invert */
@@ -46,6 +47,7 @@
 #define NS_spell_teleport 1
 #define NS_spell_rain 2
 #define NS_spell_fire 3
+#define NS_spell_antechamber 4
 
 #define NS_npcaction_none 0
 #define NS_npcaction_wishbone 1

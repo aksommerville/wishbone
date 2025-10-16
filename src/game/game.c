@@ -306,6 +306,8 @@ int load_map(int mapid) {
   struct cmdlist_entry cmd;
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
+    
+      case CMD_map_song: egg_play_song((cmd.arg[0]<<8)|cmd.arg[1],0,1); break;
 
       case CMD_map_lock: {
           int x=cmd.arg[0];

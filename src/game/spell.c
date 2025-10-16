@@ -9,6 +9,7 @@ static const char *spell_recipev[]={
   [NS_spell_teleport    ]="DDD",
   [NS_spell_rain        ]="ULDURD",
   [NS_spell_fire        ]="DRUDLU",
+  [NS_spell_antechamber ]="LRLRDD",
 };
  
 int spell_eval(const char *src,int srcc) {
@@ -43,7 +44,7 @@ void spell_cast(int spellid) {
   
     // We're triggered during a sprite update, so it would not be fitting to reload the map right now.
     // Would in fact be devastating.
-    case NS_spell_teleport: g.teleport=1; break;
+    case NS_spell_teleport: g.teleport=RID_map_start; break;
       
     case NS_spell_rain: {
         g.rainclock=2.5;
@@ -51,6 +52,10 @@ void spell_cast(int spellid) {
       
     case NS_spell_fire: {
         fprintf(stderr,"TODO %s fire\n",__func__);
+      } break;
+      
+    case NS_spell_antechamber: {
+        if (flag_get(NS_flag_antechamber_bugs)) g.teleport=RID_map_antechamber;
       } break;
   }
   // Notify sprites.
