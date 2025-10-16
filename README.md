@@ -57,7 +57,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Dialogue.
 - [x] Combat.
 - [x] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
-- [ ] More monsters.
+- [x] More monsters.
 - [x] Boss fight.
 - [x] Save game.
 - [x] Pole vault: One more lil tweak: Allow the second dpad stroke to release before A, optionally.
@@ -69,12 +69,13 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Still missing a lot of sounds, and the existing ones could stand some review.
 - [x] Can we detect soft-locking when you're on an island without a wishbone? ...no need
 - [x] Dot faces for slingshot flight. Using the generic idle face now. ...meh generic is fine, one barely sees it.
-- [ ] Lots can be prettied up, if there's time.
+- [x] Lots can be prettied up, if there's time.
 - [x] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
 - [x] Enter modal while holding dpad, it sticks on.
 - [x] Hello modal could certainly bear some prettying-up. Maybe some flying toasters in the background?
 - [x] Add a spell to teleport to the boss's antechamber, unlocked only after you kill the monsters there.
-- [ ] We're not quite at ten minutes, I think. Can we pad it out somehow?
+- [x] We're not quite at ten minutes, I think. Can we pad it out somehow?
+- - ...I like the flow as is. Tho I'm beating it consistently in about 5 minutes. But I think a first-time player would be more like 10-20. Let's call it OK.
 
 ## Notes
 

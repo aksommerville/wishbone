@@ -13,4 +13,4 @@
 image image:castle
 neighbors map:2 0x0000 map:8 map:5
 sprite @18,4 sprite:firepot sprite:fireball (u8:flag)one (u8)0
-spawn sprite:redbug 2 0 (u32)0
+spawn sprite:slime 2 0 (u32)0

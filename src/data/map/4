@@ -14,4 +14,4 @@ image image:outdoors
 neighbors map:10 map:7 map:start 0x0000
 sprite @15,3 sprite:grandpa (u8)0 (u8:npcaction)wishbone (u16)0
 sprite @16,3 sprite:grandma (u8)0 (u8:npcaction)heal (u16)0
-sprite @4,7 sprite:redbug (u32)0
+sprite @4,7 sprite:slime (u32)0
