@@ -312,7 +312,7 @@ static void _victory_render(struct modal *modal) {
       }
       graf_set_image(&g.graf,RID_image_victory);
     }
-    victory_decal(modal,80,SCENEH-75,NS_decal_dragon);
+    victory_decal(modal,100,SCENEH-75,NS_decal_dragon);
   }
   
   // Captions. Update is responsible for timing.

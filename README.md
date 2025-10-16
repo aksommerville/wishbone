@@ -69,11 +69,13 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Still missing a lot of sounds, and the existing ones could stand some review.
 - - Stompbox, begin dialogue, spell stroke, teleport, slingshot.
 - [x] Can we detect soft-locking when you're on an island without a wishbone? ...no need
-- [ ] Dot faces for slingshot flight. Using the generic idle face now.
+- [x] Dot faces for slingshot flight. Using the generic idle face now. ...meh generic is fine, one barely sees it.
 - [ ] Lots can be prettied up, if there's time.
 - [x] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
 - [x] Enter modal while holding dpad, it sticks on.
 - [ ] Hello modal could certainly bear some prettying-up. Maybe some flying toasters in the background?
+- [ ] Add a spell to teleport to the boss's antechamber, unlocked only after you kill the monsters there.
+- [ ] We're not quite at ten minutes, I think. Can we pad it out somehow?
 
 ## Notes
 
