@@ -17,8 +17,8 @@ int game_reset() {
   g.playtime=0.0;
   g.victory=0;
   egg_play_song(RID_song_into_the_dirt,0,1);
-  //if (load_map(RID_map_start)<0) return -1;
-  if (load_map(RID_map_boss)<0) return -1;//XXX while testing end of game
+  if (load_map(RID_map_start)<0) return -1;
+  //if (load_map(RID_map_boss)<0) return -1;//XXX while testing end of game
   return 0;
 }
 

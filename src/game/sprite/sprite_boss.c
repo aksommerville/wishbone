@@ -49,7 +49,7 @@ static void boss_check_seal(struct sprite *sprite) {
     boss_seal_cell(sprite,NS_sys_mapw-1,i);
   }
   g.map_dirty=1;
-  egg_play_song(RID_song_whipblade,0,1);//TODO boss song XXX do not use whipblade! I yoinked from Humm Fu.
+  egg_play_song(RID_song_bone_fight,0,1);
 }
 
 /* Update.
@@ -76,6 +76,9 @@ static void _boss_update(struct sprite *sprite,double elapsed) {
  */
 
 static int _boss_whack(struct sprite *sprite,struct sprite *whacker,double dx,double dy) {
+  //TODO
+  sprite->defunct=1;
+  g.victory=1;
   return 0;
 }
 

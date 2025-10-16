@@ -201,9 +201,6 @@ static int _victory_init(struct modal *modal) {
 }
 
 static void _victory_focus(struct modal *modal,int focus) {
-  if (focus) {
-    egg_play_song(0,0,1);//TODO victory song
-  }
 }
 
 /* Update.
@@ -220,7 +217,11 @@ static void _victory_update(struct modal *modal,double elapsed,int input,int pvi
       }
     }
   }
+  
+  double pvtime=MODAL->clock;
   MODAL->clock+=elapsed;
+  if ((pvtime<TIME_BREAK2)&&(MODAL->clock>=TIME_BREAK2)) egg_play_song(0,0,1);
+  else if ((pvtime<TIME_DRAGON)&&(MODAL->clock>=TIME_DRAGON)) egg_play_song(RID_song_bonefare,0,0);
   
   // Load captions if the time is right.
   if ((MODAL->clock>=TIME_HEY_DRAGON)&&(MODAL->clock<TIME_BETWEEN_SPEECH)) victory_set_caption(modal,STRIX_HEY_DRAGON);

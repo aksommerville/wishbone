@@ -50,7 +50,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Boomerang: Collect treasures and hurt foes.
 - [x] Heart containers.
 - [x] Educators.
-- [ ] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
+- [x] Music. Still need something for gameover, and maybe a different one for the boss fight, if there's a boss fight.
 - [x] Sound effects.
 - [x] Hello modal.
 - [x] Gameover modal and fancy cutscenes.
@@ -72,7 +72,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.
 - [ ] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
-- [ ] Enter modal while holding dpad, it sticks on.
+- [x] Enter modal while holding dpad, it sticks on.
 
 ## Notes
 
