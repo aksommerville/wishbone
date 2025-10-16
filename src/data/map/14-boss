@@ -14,3 +14,7 @@ image image:castle
 neighbors 0x0000 0x0000 0x0000 map:13
 sprite @15,5 sprite:boss (u32)0
 sprite @9,10 sprite:hero (u32)0
+sprite @18,9 sprite:firepot sprite:fireball (u8:flag)one (u8)0
+sprite @1,9 sprite:firepot sprite:fireball (u8:flag)one (u8)0
+sprite @1,1 sprite:firepot sprite:fireball (u8:flag)one (u8)0
+sprite @18,1 sprite:firepot sprite:fireball (u8:flag)one (u8)0

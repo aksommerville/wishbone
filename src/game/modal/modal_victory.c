@@ -210,7 +210,7 @@ static void _victory_update(struct modal *modal,double elapsed,int input,int pvi
   if (input!=pvinput) {
     if ((input&EGG_BTN_SOUTH)&&!(pvinput&EGG_BTN_SOUTH)) {
       if (MODAL->clock<TIME_REPORT) {
-        MODAL->clock=TIME_REPORT;
+        // Make them wait.
       } else {
         modal->defunct=1;
         modal_spawn(&modal_type_hello);
@@ -305,7 +305,7 @@ static void _victory_render(struct modal *modal) {
     if (MODAL->clock<TIME_DRAGON+swashdur) {
       graf_set_input(&g.graf,0);
       int len=(int)((1.0-(MODAL->clock-TIME_DRAGON)/swashdur)*60.0);
-      int x=100;
+      int x=120;
       int y=SCENEH-50;
       for (;x<300;x+=30) {
         graf_line(&g.graf,x,y,0xffffffff,x,y-len,0xffffffff);
@@ -313,7 +313,6 @@ static void _victory_render(struct modal *modal) {
       graf_set_image(&g.graf,RID_image_victory);
     }
     victory_decal(modal,80,SCENEH-75,NS_decal_dragon);
-    //TODO dust clouds?
   }
   
   // Captions. Update is responsible for timing.

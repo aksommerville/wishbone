@@ -58,7 +58,7 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Combat.
 - [x] Consequences for killing a foe: Prize, stats, flags. <-- really need a way to heal within the castle. If not prize hearts, something else.
 - [ ] More monsters.
-- [ ] Boss fight.
+- [x] Boss fight.
 - [x] Save game.
 - [x] Pole vault: One more lil tweak: Allow the second dpad stroke to release before A, optionally.
 - [x] Try requiring a double-tap on the dpad for polevault; I'm still hitting it by accident in combat.
@@ -71,8 +71,9 @@ Or maybe just keep the educators static, that's less to think about.
 - [x] Can we detect soft-locking when you're on an island without a wishbone? ...no need
 - [ ] Dot faces for slingshot flight. Using the generic idle face now.
 - [ ] Lots can be prettied up, if there's time.
-- [ ] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
+- [x] Dragon in victory cutscene (decide what he looks like for the Boss Fight first).
 - [x] Enter modal while holding dpad, it sticks on.
+- [ ] Hello modal could certainly bear some prettying-up. Maybe some flying toasters in the background?
 
 ## Notes
 
