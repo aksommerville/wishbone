@@ -72,6 +72,7 @@ extern struct g {
   int has_spawn; // Nonzero if we created at least one sprite from a flagged spawn point. Check for completion at every kill.
   double playtime;
   int victory;
+  int playing_song_id;
   
   char saved_game[256];
   int saved_gamec;
@@ -98,6 +99,7 @@ void qpos_release(int x,int y);
 
 #define SFX(tag) wishbone_sound(RID_sound_##tag);
 void wishbone_sound(int rid);
+void wishbone_song(int rid,int repeat);
 
 // Represented spells are some combination of [LRUD]. Also a good format for programmatic analysis.
 int spell_eval(const char *src,int srcc);

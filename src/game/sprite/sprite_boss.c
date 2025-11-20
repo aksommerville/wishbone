@@ -48,7 +48,7 @@ struct sprite_boss {
 static int _boss_init(struct sprite *sprite) {
 
   // Music goes silent when you enter my room, briefly.
-  egg_play_song(0,0,1);
+  wishbone_song(0,0);
   
   SPRITE->survival_clock=SURVIVAL_TIME;
   
@@ -96,7 +96,7 @@ static void boss_check_seal(struct sprite *sprite) {
     boss_seal_cell(sprite,NS_sys_mapw-1,i);
   }
   g.map_dirty=1;
-  egg_play_song(RID_song_bone_fight,0,1);
+  wishbone_song(RID_song_bone_fight,1);
 }
 
 /* End of a motion.

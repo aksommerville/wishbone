@@ -50,7 +50,7 @@ static int _gameover_init(struct modal *modal) {
  
 static void _gameover_focus(struct modal *modal,int focus) {
   if (focus) {
-    egg_play_song(0,0,1);//TODO gameover music
+    wishbone_song(0,0);
   }
 }
 

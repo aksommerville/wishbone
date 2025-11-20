@@ -16,7 +16,7 @@ int game_reset() {
   g.flags[0]=0x02; // (NS_flag_zero,NS_flag_one) (0,1) must have values (0,1).
   g.playtime=0.0;
   g.victory=0;
-  egg_play_song(RID_song_into_the_dirt,0,1);
+  wishbone_song(RID_song_into_the_dirt,1);
   if (load_map(RID_map_start)<0) return -1;
   //if (load_map(RID_map_boss)<0) return -1;//XXX while testing end of game
   return 0;
@@ -307,7 +307,7 @@ int load_map(int mapid) {
   while (cmdlist_reader_next(&cmd,&reader)>0) {
     switch (cmd.opcode) {
     
-      case CMD_map_song: egg_play_song((cmd.arg[0]<<8)|cmd.arg[1],0,1); break;
+      case CMD_map_song: wishbone_song((cmd.arg[0]<<8)|cmd.arg[1],1); break;
 
       case CMD_map_lock: {
           int x=cmd.arg[0];

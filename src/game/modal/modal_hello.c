@@ -77,7 +77,7 @@ static int _hello_init(struct modal *modal) {
  
 static void _hello_focus(struct modal *modal,int focus) {
   if (focus) {
-    egg_play_song(RID_song_behind_each_tapestry,0,1);
+    wishbone_song(RID_song_behind_each_tapestry,1);
   }
 }
 

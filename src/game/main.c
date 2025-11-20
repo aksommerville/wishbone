@@ -134,3 +134,9 @@ void wishbone_sound(int rid) {
   //TODO limiter? pan?
   egg_play_sound(rid,1.0,0.0);
 }
+
+void wishbone_song(int rid,int repeat) {
+  if (rid==g.playing_song_id) return;
+  g.playing_song_id=rid;
+  egg_play_song(1,rid,repeat,0.500f,0.0f);
+}

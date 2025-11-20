@@ -462,7 +462,7 @@ static void _lockpick_update(struct modal *modal,double elapsed,int input,int pv
   if (MODAL->deathclock>0.0) {
     if ((MODAL->deathclock-=elapsed)<=0.0) {
       modal->defunct=1;
-      SFX(lockpick_defense)
+      SFX(lockpick_defense) // noop. hero will play "injure"
       sprite_hero_injure(g.hero,0);
     }
   }
